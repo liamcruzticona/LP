@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Analizador Léxico-Sintáctico Tipo C</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material.min.css">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .btn-primary {
+            background: linear-gradient(45deg, #007bff, #0056b3);
+            border: none;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .nav-tabs .nav-link.active {
+            background-color: #007bff;
+            color: white;
+        }
+        .CodeMirror {
+            border-radius: 10px;
+            height: 300px;
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            color: #007bff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white text-center">
+                    <h1 class="h3 mb-0">Analizador Léxico y Sintáctico</h1>
+                    <p class="mb-0">Para lenguajes tipo C</p>
+                </div>
+
+                <div class="card-body">
+                    <!-- Editor Section -->
+                    <div class="mb-4">
+                        <h5 class="card-title">Código a Analizar</h5>
+                        <div id="editor">int x = 10;</div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="d-flex flex-wrap gap-2 mb-4">
+                        <button class="btn btn-primary" onclick="analizar()">
+                            <i class="fas fa-play"></i> Analizar
+                        </button>
+                        <button class="btn btn-secondary" onclick="limpiar()">
+                            <i class="fas fa-trash"></i> Limpiar
+                        </button>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-book"></i> Ejemplos
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" href="#" onclick="cargarEjemplo('int x = 10;')">Declaración simple</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cargarEjemplo('float pi = 3.14;')">Float y strings</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cargarEjemplo('int suma(int a, int b) { return a + b; }')">Función</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cargarEjemplo('if (x > 5) { y = 1; } else { y = 0; }')">If/Else</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cargarEjemplo('while (i < 10) { i = i + 1; }')">While loop</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cargarEjemplo('for (int i = 0; i < 10; i++) { x = x + i; }')">For loop</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="cargarEjemplo('int z = (a + b) * c; // Expresión anidada')">Expresiones anidadas</a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Loading Indicator -->
+                    <div id="loading" class="loading mb-3">
+                        <div class="spinner-border spinner-border-sm" role="status"></div>
+                        Analizando...
+                    </div>
+
+                    <!-- Results Tabs -->
+                    <ul class="nav nav-tabs" id="resultTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tokens-tab" data-bs-toggle="tab" data-bs-target="#tokens" type="button" role="tab">Tokens</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="sintactico-tab" data-bs-toggle="tab" data-bs-target="#sintactico" type="button" role="tab">Sintáctico</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="entropia-tab" data-bs-toggle="tab" data-bs-target="#entropia" type="button" role="tab">Entropía</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="resultTabsContent">
+                        <div class="tab-pane fade show active" id="tokens" role="tabpanel">
+                            <pre id="tokens-content" class="bg-light p-3 rounded"></pre>
+                        </div>
+                        <div class="tab-pane fade" id="sintactico" role="tabpanel">
+                            <pre id="sintactico-content" class="bg-light p-3 rounded"></pre>
+                        </div>
+                        <div class="tab-pane fade" id="entropia" role="tabpanel">
+                            <pre id="entropia-content" class="bg-light p-3 rounded"></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Font Awesome -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+
+<!-- CodeMirror JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/mode/clike/clike.min.js"></script>
+
+<script>
+    // Inicializar CodeMirror
+    var editor = CodeMirror(document.getElementById("editor"), {
+        value: "int x = 10;",
+        mode: "text/x-csrc",
+        theme: "material",
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        autoCloseBrackets: true,
+        matchBrackets: true
+    });
+
+    function analizar() {
+        const loading = document.getElementById("loading");
+        loading.style.display = "block";
+
+        const codigo = editor.getValue().trim();
+
+        // 🔹 VALIDACIÓN FRONTEND
+        if (!codigo) {
+            alert("Por favor, ingresa código a analizar");
+            loading.style.display = "none";
+            return;
+        }
+
+        if (codigo.length > 10000) {
+            alert("El código es demasiado largo (máximo 10000 caracteres)");
+            loading.style.display = "none";
+            return;
+        }
+
+        // Validación básica de sintaxis
+        if (codigo.includes("{") && !codigo.includes("}")) {
+            alert("⚠️ Advertencia: Hay '{' sin cerrar '}'");
+        }
+        if (codigo.includes("(") && !codigo.includes(")")) {
+            alert("⚠️ Advertencia: Hay '(' sin cerrar ')'");
+        }
+
+        fetch("http://localhost:5000/analizar", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ codigo: codigo })
+        })
+        .then(res => {
+            if (!res.ok) {
+                return res.json().then(data => {
+                    throw new Error(data.error || `Error HTTP ${res.status}`);
+                });
+            }
+            return res.json();
+        })
+        .then(data => {
+            loading.style.display = "none";
+
+            if (data.error) {
+                alert("Error: " + data.error + "\nSugerencia: " + (data.sugerencia || ""));
+                return;
+            }
+
+            document.getElementById("tokens-content").textContent =
+                JSON.stringify(data.tokens, null, 2);
+
+            document.getElementById("sintactico-content").textContent =
+                JSON.stringify(data.sintactico, null, 2);
+
+            // Mostrar estadísticas completas de entropía
+            let entropia_text = " ENTROPÍA DE SHANNON\n";
+            entropia_text += "=====================\n";
+            entropia_text += `Valor: ${data.estadisticas.entropia_shannon}\n`;
+            entropia_text += `Máxima: ${data.estadisticas.entropia_maxima}\n`;
+            entropia_text += `Normalizada: ${data.estadisticas.normalizacion}\n`;
+            entropia_text += `Total de tokens: ${data.estadisticas.total_tokens}\n`;
+            entropia_text += `Tipos únicos: ${data.estadisticas.tipos_unicos}\n`;
+            entropia_text += `Densidad: ${data.estadisticas.densidad}\n`;
+            entropia_text += "\n DISTRIBUCIÓN\n";
+            entropia_text += "================\n";
+            entropia_text += JSON.stringify(data.estadisticas.distribucion, null, 2);
+
+            document.getElementById("entropia-content").textContent = entropia_text;
+        })
+        .catch(error => {
+            loading.style.display = "none";
+            console.error("ERROR:", error);
+            alert("Error de conexión: " + error.message);
+        });
+    }
+
+    function limpiar() {
+        editor.setValue("");
+        document.getElementById("tokens-content").textContent = "";
+        document.getElementById("sintactico-content").textContent = "";
+        document.getElementById("entropia-content").textContent = "";
+    }
+
+    function cargarEjemplo(codigo) {
+        editor.setValue(codigo);
+    }
+</script>
+
+</body>
+</html>

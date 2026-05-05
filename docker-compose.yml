@@ -1,0 +1,23 @@
+
+
+
+version: "3.9"
+
+services:
+  backend:
+    build: .
+    container_name: analizador_backend
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+    restart: always
+
+  frontend:
+    image: nginx:alpine
+    container_name: analizador_frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+    restart: always
