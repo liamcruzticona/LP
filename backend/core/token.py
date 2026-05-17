@@ -8,7 +8,7 @@ class TokenBase:
     """
 
     def __init__(self, valor, linea, columna):
-        # 🔒 ENCAPSULAMIENTO:
+        # ENCAPSULAMIENTO:
         # Se agrupan los datos comunes en una sola clase
         self.valor = valor
         self.linea = linea
@@ -20,7 +20,7 @@ class TokenBase:
 
 class Token(TokenBase):
     """
-    🔹 HERENCIA:
+     HERENCIA:
     Token hereda de TokenBase para reutilizar atributos comunes
     como valor, línea y columna.
     """

@@ -29,7 +29,7 @@ class AnalizadorLexico:
     """
 
     def __init__(self, codigo):
-        # 🔒 ENCAPSULAMIENTO
+        #  ENCAPSULAMIENTO
         self.codigo = codigo
         self.pos = 0
         self.linea = 1

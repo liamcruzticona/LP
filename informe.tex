@@ -68,12 +68,29 @@ Jose Luis Juarez Ruelas\\[0.8cm]
 
 \end{titlepage}
 
+\newpage
 
+\section*{LINKS DEL PROYECTO}
+\addcontentsline{toc}{section}{LINKS DEL PROYECTO}
+
+\begin{center}
+\textbf{Link de video del proyecto}\\[0.3cm]
+\url{https://drive.google.com/drive/folders/1GDHls4fVMZTqzTVsMXGGAJ9VqVojHJgL?usp=drive_link}
+
+\vspace{1cm}
+
+\textbf{Repositorio GitHub}\\[0.3cm]
+\url{https://github.com/liamcruzticona/LP}
+\end{center}
+
+\newpage
 
 % -------------------------
 % ÍNDICE GENERAL
 % -------------------------
 \tableofcontents
+\newpage
+\listoffigures
 \newpage
 
 % -------------------------
@@ -171,6 +188,7 @@ El sistema se compone de los siguientes elementos:
    - Calcular probabilidades y entropía.
 5. Retornar JSON con tokens, árbol sintáctico y estadísticas.
 \end{verbatim}
+
 \subsection{Entropía de Shannon}
 
 La entropía de Shannon es una medida de la incertidumbre o complejidad informativa en un conjunto de datos, propuesta por Claude Shannon en 1948. En el contexto de este proyecto, se aplica para cuantificar la diversidad y complejidad de los tokens en el código fuente, lo que permite evaluar la riqueza léxica del programa.
@@ -189,6 +207,54 @@ Para calcular \( p_i \), se cuenta la frecuencia de cada token en el código y s
 El valor de \( H \) varía entre 0 (todos los tokens son iguales, baja complejidad) y \( \log_2(n) \) (entropía máxima, alta diversidad). En el prototipo, se normaliza la entropía dividiendo por la entropía máxima para obtener un valor entre 0 y 1, facilitando la comparación.
 
 Esta métrica complementa el análisis léxico y sintáctico, proporcionando una dimensión cuantitativa de la complejidad del código fuente.
+
+
+
+% -------------------------
+% IMPLEMENTACIÓN
+% -------------------------
+\section{IMPLEMENTACIÓN}
+
+El prototipo se implementó con los siguientes componentes:
+
+\begin{itemize}
+    \item \textbf{backend/app.py}: inicializa Flask, habilita CORS y registra el blueprint de análisis.
+    \item \textbf{backend/routes/analisis.py}: define el endpoint \texttt{/analizar} y administra los errores de cada fase.
+    \item \textbf{backend/core/token.py}: define la representación de tokens con tipo, valor, línea y columna.
+    \item \textbf{backend/core/lexico.py}: realiza la tokenización avanzada con floats, strings, operadores compuestos y comentarios.
+    \item \textbf{backend/core/sintactico.py}: parsea declaraciones, funciones, if, while, for y expresiones complejas.
+    \item \textbf{backend/core/entropia.py}: calcula entropía de Shannon y estadísticas normalizadas.
+    \item \textbf{frontend/index.html}: interfaz web con editor, botones de ejemplo y validación previa al análisis.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \imgstd{frontend.png}
+    \caption{Interfaz funcional}
+    \label{fig:arquitectura}
+\end{figure}
+
+% -------------------------
+% RESULTADOS
+% -------------------------
+\section{RESULTADOS}
+
+El prototipo entrega los siguientes resultados:
+
+\begin{itemize}
+    \item Lista de tokens reconocidos por tipo, valor y posición.
+    \item Árbol sintáctico en formato JSON que muestra declaraciones, expresiones y bloques.
+    \item Estadísticas de entropía: valor de Shannon, entropía máxima, normalización, tipos únicos y densidad.
+    \item Manejo de errores con mensajes claros y sugerencias para el usuario.
+\end{itemize}
+
+\begin{figure}[H]
+    \centering
+    \imgstd{json.png}
+    \caption{Resultado del análisis en formato JSON}
+    \label{fig:api}
+\end{figure}
+
 \subsection{Capturas de la ejecución del prototipo}
 
 A continuación, se muestran capturas representativas del funcionamiento del sistema en diferentes etapas: interfaz, ejecución del backend, respuesta de la API y estructura del proyecto.
@@ -231,51 +297,6 @@ A continuación, se muestran capturas representativas del funcionamiento del sis
     \end{figure}
 
 \end{enumerate}
-
-% -------------------------
-% IMPLEMENTACIÓN
-% -------------------------
-\section{IMPLEMENTACIÓN}
-
-El prototipo se implementó con los siguientes componentes:
-
-\begin{itemize}
-    \item \textbf{backend/app.py}: inicializa Flask, habilita CORS y registra el blueprint de análisis.
-    \item \textbf{backend/routes/analisis.py}: define el endpoint \texttt{/analizar} y administra los errores de cada fase.
-    \item \textbf{backend/core/token.py}: define la representación de tokens con tipo, valor, línea y columna.
-    \item \textbf{backend/core/lexico.py}: realiza la tokenización avanzada con floats, strings, operadores compuestos y comentarios.
-    \item \textbf{backend/core/sintactico.py}: parsea declaraciones, funciones, if, while, for y expresiones complejas.
-    \item \textbf{backend/core/entropia.py}: calcula entropía de Shannon y estadísticas normalizadas.
-    \item \textbf{frontend/index.html}: interfaz web con editor, botones de ejemplo y validación previa al análisis.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \imgstd{frontend.png}
-    \caption{Arquitectura general del prototipo}
-    \label{fig:arquitectura}
-\end{figure}
-
-% -------------------------
-% RESULTADOS
-% -------------------------
-\section{RESULTADOS}
-
-El prototipo entrega los siguientes resultados:
-
-\begin{itemize}
-    \item Lista de tokens reconocidos por tipo, valor y posición.
-    \item Árbol sintáctico en formato JSON que muestra declaraciones, expresiones y bloques.
-    \item Estadísticas de entropía: valor de Shannon, entropía máxima, normalización, tipos únicos y densidad.
-    \item Manejo de errores con mensajes claros y sugerencias para el usuario.
-\end{itemize}
-
-\begin{figure}[H]
-    \centering
-    \imgstd{json.png}
-    \caption{Resultado del análisis en formato JSON}
-    \label{fig:api}
-\end{figure}
 
 % -------------------------
 % CONCLUSIONES

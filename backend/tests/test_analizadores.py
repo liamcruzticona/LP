@@ -12,6 +12,8 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from core.lexico import AnalizadorLexico
 from core.sintactico import Parser
 from core.entropia import CalculadorEntropia
+from core.analizador_factory import get_analizador
+from core.semantica import ValidadorSemantico
 
 
 class TestsAnalizador:
@@ -177,6 +179,44 @@ class TestsAnalizador:
         except Exception as e:
             self.test("Sintáctico: Expresiones anidadas", False, str(e))
 
+    def test_multilenguaje_javascript(self):
+        """Test: análisis multilenguaje JavaScript"""
+        codigo = "var x = 10; function saludo() { return x; }"
+        try:
+            analizador = get_analizador("javascript")
+            resultado = analizador.analizar(codigo)
+            es_valido = resultado.get("lenguaje") == "JavaScript" and isinstance(resultado.get("tokens"), list)
+            self.test("Multilenguaje: JavaScript", es_valido,
+                      f"Resultado: {resultado}")
+        except Exception as e:
+            self.test("Multilenguaje: JavaScript", False, str(e))
+
+    def test_multilenguaje_python(self):
+        """Test: análisis multilenguaje Python"""
+        codigo = "def saludar(nombre):\n    return nombre"
+        try:
+            analizador = get_analizador("python")
+            resultado = analizador.analizar(codigo)
+            es_valido = resultado.get("lenguaje") == "Python" and isinstance(resultado.get("tokens"), list)
+            self.test("Multilenguaje: Python", es_valido,
+                      f"Resultado: {resultado}")
+        except Exception as e:
+            self.test("Multilenguaje: Python", False, str(e))
+
+    def test_validacion_semantica_basica(self):
+        """Test: validación semántica básica"""
+        codigo = "int x = 5; x = x + 1;"
+        try:
+            lexer = AnalizadorLexico(codigo)
+            tokens = lexer.analizar()
+            parser = Parser(tokens)
+            ast = parser.analizar()
+            validacion = ValidadorSemantico(ast).validar()
+            self.test("Semántica: Declaración y uso", validacion.get("exito") is True,
+                      f"Errores: {validacion.get('errores')}")
+        except Exception as e:
+            self.test("Semántica: Declaración y uso", False, str(e))
+
     # ==================== TESTS DE ENTROPÍA ====================
 
     def test_entropia_calculo(self):
@@ -283,6 +323,11 @@ class TestsAnalizador:
         self.test_sintactico_while()
         self.test_sintactico_for()
         self.test_sintactico_expresiones_anidadas()
+
+        print("\n🪄 TESTS MULTILENGUAJE")
+        print("-" * 60)
+        self.test_multilenguaje_javascript()
+        self.test_multilenguaje_python()
 
         print("\n📊 TESTS DE ENTROPÍA")
         print("-" * 60)

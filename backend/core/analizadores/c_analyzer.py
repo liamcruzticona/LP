@@ -1,241 +1,238 @@
-"""Módulo de análisis sintáctico mejorado"""
+import re
 
+from core.analizadores.base import AnalizadorLexicoBase, ParserBase, AnalizadorLenguaje
 from core.token import Token
 
-class Parser:
-    """
-     ABSTRACCIÓN:
-    Clase que encapsula toda la lógica del análisis sintáctico.
-    """
+PALABRAS_RESERVADAS_C = {
+    "int", "float", "char", "double", "void", "if", "else", "while",
+    "for", "return", "break", "continue", "struct", "const", "static"
+}
 
+TOKEN_REGEX_C = [
+    ("COMENTARIO", r'//.*'),
+    ("STRING", r'"([^"\\]|\\.)*"'),
+    ("FLOAT", r'\d+\.\d+'),
+    ("NUMERO", r'\d+'),
+    ("OP_COMPUESTO", r'(\+=|-=|\*=|/=|==|!=|<=|>=|\+\+|--)'),
+    ("ID", r'[a-zA-Z_][a-zA-Z0-9_]*'),
+    ("OPERADOR", r'[+\-*/=%<>!&|]'),
+    ("SIMBOLO", r'[;{}(),.\[\]]'),
+    ("ESPACIO", r'\s+'),
+]
+
+
+class CLexer(AnalizadorLexicoBase):
+    def __init__(self, codigo):
+        super().__init__(codigo)
+        self.pos = 0
+        self.linea = 1
+        self.columna = 1
+        self.tokens = []
+
+    def analizar(self):
+        while self.pos < len(self.codigo):
+            match = None
+            for tipo, regex in TOKEN_REGEX_C:
+                patron = re.compile(regex)
+                match = patron.match(self.codigo, self.pos)
+                if match:
+                    texto = match.group(0)
+                    if tipo == "ESPACIO":
+                        self._manejar_espacios(texto)
+                    else:
+                        self._crear_token(tipo, texto)
+                    self.pos = match.end(0)
+                    break
+            if not match:
+                raise Exception(
+                    f"Error léxico en línea {self.linea}, columna {self.columna}: símbolo no reconocido"
+                )
+        return self.tokens
+
+    def _manejar_espacios(self, texto):
+        if "\n" in texto:
+            self.linea += texto.count("\n")
+            self.columna = 1
+        else:
+            self.columna += len(texto)
+
+    def _crear_token(self, tipo, texto):
+        if tipo == "COMENTARIO":
+            self.columna += len(texto)
+            return
+
+        if tipo == "ID" and texto in PALABRAS_RESERVADAS_C:
+            tipo = "RESERVADA"
+        if tipo == "OPERADOR" and texto in ["*", "&"]:
+            tipo = "PUNTERO"
+
+        token = Token(tipo, texto, self.linea, self.columna)
+        self.tokens.append(token)
+        self.columna += len(texto)
+
+
+class CParser(ParserBase):
     def __init__(self, tokens):
-        #  ENCAPSULAMIENTO
-        self.tokens = tokens
+        super().__init__(tokens)
         self.pos = 0
         self.errores = []
 
     def actual(self):
-        """Devuelve el token actual"""
-        if self.pos < len(self.tokens):
-            return self.tokens[self.pos]
-        return None
-
-    def peek(self, offset=1):
-        """Mira adelante sin consumir"""
-        if self.pos + offset < len(self.tokens):
-            return self.tokens[self.pos + offset]
-        return None
+        return self.tokens[self.pos] if self.pos < len(self.tokens) else None
 
     def avanzar(self):
-        """Avanza al siguiente token"""
         self.pos += 1
 
     def consumir(self, tipo_esperado, mensaje_custom=None):
-        """
-        POLIMORFISMO (conceptual):
-        Este método funciona para cualquier tipo de token esperado
-        """
         token = self.actual()
-
         if not token:
-            self.errores.append(f"Se esperaba {tipo_esperado} pero llegó fin de archivo")
-            raise Exception(f"Error sintáctico: se esperaba {tipo_esperado}")
-
-        if token.tipo == tipo_esperado or (isinstance(tipo_esperado, list) and token.tipo in tipo_esperado):
+            raise Exception(mensaje_custom or f"Se esperaba {tipo_esperado} pero llegó fin de archivo")
+        if token.tipo == tipo_esperado or (
+            isinstance(tipo_esperado, list) and token.tipo in tipo_esperado
+        ):
             self.avanzar()
             return token
-        else:
-            msg = mensaje_custom or f"se esperaba {tipo_esperado} pero se encontró {token.tipo}"
-            self.errores.append(f"Error en línea {token.linea}: {msg}")
-            raise Exception(f"Error sintáctico: {msg} en línea {token.linea}")
+        msg = mensaje_custom or f"Se esperaba {tipo_esperado} pero se encontró {token.tipo}"
+        raise Exception(f"Error sintáctico: {msg} en línea {token.linea}")
 
     def analizar(self):
-        """
-        ABSTRACCIÓN:
-        
-        """
-        resultados = []
-
+        ast = []
         try:
             while self.actual() is not None:
-                resultados.append(self.sentencia())
+                ast.append(self.sentencia())
         except Exception as e:
             return {"tipo": "error", "mensaje": str(e), "errores": self.errores}
-
-        return resultados
+        return ast
 
     def sentencia(self):
-        """Parsea cualquier sentencia"""
         token = self.actual()
-
         if not token:
             return None
-
         if token.tipo == "RESERVADA":
-            if token.valor in ["int", "float", "char", "double", "void"]:
+            if token.valor in ["int", "float", "char", "double", "void", "const", "static"]:
                 return self.declaracion_o_funcion()
-            elif token.valor == "if":
+            if token.valor == "if":
                 return self.sentencia_if()
-            elif token.valor == "while":
+            if token.valor == "while":
                 return self.sentencia_while()
-            elif token.valor == "for":
+            if token.valor == "for":
                 return self.sentencia_for()
-            elif token.valor == "return":
+            if token.valor == "return":
                 return self.sentencia_return()
-            else:
-                raise Exception(f"Sentencia desconocida: {token.valor}")
-
+            raise Exception(f"Sentencia desconocida: {token.valor}")
         if token.tipo in ["ID", "NUMERO", "FLOAT", "STRING"] or token.valor == "(":
             return self.sentencia_expresion()
-
         raise Exception(f"Error sintáctico: token inesperado '{token.valor}' en línea {token.linea}")
 
-    def sentencia_expresion(self):
-        expr = self.expresion()
-        self.consumir("SIMBOLO", "se esperaba ';'")
-        return {"tipo": "expresion", "expresion": expr}
-
     def declaracion_o_funcion(self):
-        """Determina si es una declaración o función"""
         pos_guardada = self.pos
-        errores_guardados = self.errores.copy()
-
         try:
             return self.funcion()
         except Exception:
             self.pos = pos_guardada
-            self.errores = errores_guardados
             return self.declaracion()
 
     def declaracion(self):
-        """Regla: tipo ID [= valor] ;"""
         tipo = self.consumir("RESERVADA")
         identificador = self.consumir("ID")
-
         valor = None
         if self.actual() and self.actual().tipo == "OPERADOR" and self.actual().valor == "=":
             self.consumir("OPERADOR")
             valor = self.expresion()
-
         self.consumir("SIMBOLO", "se esperaba ';'")
-
         return {
             "tipo": "declaracion",
             "tipo_dato": tipo.valor,
             "identificador": identificador.valor,
-            "valor": valor
+            "linea": tipo.linea,
+            "valor": valor,
         }
 
     def funcion(self):
-        """Regla: tipo ID ( parametros ) { sentencias }"""
         tipo_retorno = self.consumir("RESERVADA")
         nombre = self.consumir("ID")
         self.consumir("SIMBOLO", "se esperaba '('")
-
         parametros = self.parametros()
-
         self.consumir("SIMBOLO", "se esperaba ')'")
         self.consumir("SIMBOLO", "se esperaba '{'")
-
         sentencias = self.bloque()
-
         self.consumir("SIMBOLO", "se esperaba '}'")
-
         return {
             "tipo": "funcion",
             "tipo_retorno": tipo_retorno.valor,
             "nombre": nombre.valor,
+            "linea": nombre.linea,
             "parametros": parametros,
-            "cuerpo": sentencias
+            "cuerpo": sentencias,
         }
 
     def parametros(self):
-        """Parsea parámetros de función"""
         params = []
-
-        if self.actual() and self.actual().tipo == "RESERVADA":
-            while True:
-                tipo = self.consumir("RESERVADA")
-                nombre = self.consumir("ID")
-                params.append({"tipo": tipo.valor, "nombre": nombre.valor})
-
-                if self.actual() and self.actual().valor == ",":
-                    self.consumir("SIMBOLO")
-                else:
-                    break
-
+        while self.actual() and self.actual().tipo == "RESERVADA":
+            tipo = self.consumir("RESERVADA")
+            nombre = self.consumir("ID")
+            params.append({"tipo": tipo.valor, "nombre": nombre.valor, "linea": nombre.linea})
+            if self.actual() and self.actual().valor == ",":
+                self.consumir("SIMBOLO")
+            else:
+                break
         return params
 
     def bloque(self):
-        """Parsea un bloque de sentencias"""
         sentencias = []
-
         while self.actual() and self.actual().valor != "}":
             sentencias.append(self.sentencia())
-
         return sentencias
 
     def sentencia_if(self):
-        self.consumir("RESERVADA")  # if
-        self.consumir("SIMBOLO")  # (
+        self.consumir("RESERVADA")
+        self.consumir("SIMBOLO")
         condicion = self.expresion()
-        self.consumir("SIMBOLO")  # )
-        self.consumir("SIMBOLO")  # {
+        self.consumir("SIMBOLO")
+        self.consumir("SIMBOLO")
         bloque_if = self.bloque()
-        self.consumir("SIMBOLO")  # }
-
+        self.consumir("SIMBOLO")
         bloque_else = None
         if self.actual() and self.actual().tipo == "RESERVADA" and self.actual().valor == "else":
             self.consumir("RESERVADA")
-            self.consumir("SIMBOLO")  # {
+            self.consumir("SIMBOLO")
             bloque_else = self.bloque()
-            self.consumir("SIMBOLO")  # }
-
+            self.consumir("SIMBOLO")
         return {"tipo": "if", "condicion": condicion, "bloque_if": bloque_if, "bloque_else": bloque_else}
 
     def sentencia_while(self):
-        self.consumir("RESERVADA")  # while
-        self.consumir("SIMBOLO")  # (
+        self.consumir("RESERVADA")
+        self.consumir("SIMBOLO")
         condicion = self.expresion()
-        self.consumir("SIMBOLO")  # )
-        self.consumir("SIMBOLO")  # {
+        self.consumir("SIMBOLO")
+        self.consumir("SIMBOLO")
         bloque = self.bloque()
-        self.consumir("SIMBOLO")  # }
-
+        self.consumir("SIMBOLO")
         return {"tipo": "while", "condicion": condicion, "bloque": bloque}
 
     def sentencia_for(self):
-        self.consumir("RESERVADA")  # for
-        self.consumir("SIMBOLO")  # (
-
+        self.consumir("RESERVADA")
+        self.consumir("SIMBOLO")
         init = None
         if self.actual() and self.actual().valor != ";":
             if self.actual().tipo == "RESERVADA" and self.peek() and self.peek().tipo == "ID":
                 init = self.declaracion_for()
             else:
                 init = self.expresion()
-        self.consumir("SIMBOLO")  # ;
-
-        condicion = None
-        if self.actual() and self.actual().valor != ";":
-            condicion = self.expresion()
-        self.consumir("SIMBOLO")  # ;
-
-        incremento = None
-        if self.actual() and self.actual().valor != ")":
-            incremento = self.expresion()
-        self.consumir("SIMBOLO")  # )
-
-        self.consumir("SIMBOLO")  # {
+        self.consumir("SIMBOLO")
+        condicion = self.expresion() if self.actual() and self.actual().valor != ";" else None
+        self.consumir("SIMBOLO")
+        incremento = self.expresion() if self.actual() and self.actual().valor != ")" else None
+        self.consumir("SIMBOLO")
+        self.consumir("SIMBOLO")
         bloque = self.bloque()
-        self.consumir("SIMBOLO")  # }
-
+        self.consumir("SIMBOLO")
         return {
             "tipo": "for",
             "inicializacion": init,
             "condicion": condicion,
             "incremento": incremento,
-            "bloque": bloque
+            "bloque": bloque,
         }
 
     def declaracion_for(self):
@@ -249,16 +246,17 @@ class Parser:
             "tipo": "declaracion",
             "tipo_dato": tipo.valor,
             "identificador": identificador.valor,
-            "valor": valor
+            "linea": tipo.linea,
+            "valor": valor,
         }
 
     def sentencia_return(self):
-        self.consumir("RESERVADA")
+        token = self.consumir("RESERVADA")
         valor = None
         if self.actual() and self.actual().valor != ";":
             valor = self.expresion()
-        self.consumir("SIMBOLO")  # ;
-        return {"tipo": "return", "valor": valor}
+        self.consumir("SIMBOLO")
+        return {"tipo": "return", "valor": valor, "linea": token.linea}
 
     def sentencia_expresion(self):
         expr = self.expresion()
@@ -270,64 +268,60 @@ class Parser:
 
     def expresion_binaria(self, min_precedencia):
         izquierda = self.primaria()
-
         while self.actual() and self.es_operador_binario(self.actual()):
             op = self.actual()
             prec = self.precedencia(op)
-
             if prec < min_precedencia:
                 break
-
             self.avanzar()
             derecha = self.expresion_binaria(prec + 1)
-            izquierda = {"tipo": "binaria", "izquierda": izquierda, "operador": op.valor, "derecha": derecha}
-
+            izquierda = {
+                "tipo": "binaria",
+                "izquierda": izquierda,
+                "operador": op.valor,
+                "derecha": derecha,
+                "linea": op.linea,
+            }
         return izquierda
 
     def primaria(self):
         token = self.actual()
-
         if not token:
             raise Exception("Expresión inesperada: fin de archivo")
-
         if token.tipo == "NUMERO":
             self.avanzar()
-            return {"tipo": "numero", "valor": token.valor}
-
+            return {"tipo": "numero", "valor": token.valor, "linea": token.linea}
         if token.tipo == "FLOAT":
             self.avanzar()
-            return {"tipo": "float", "valor": token.valor}
-
+            return {"tipo": "float", "valor": token.valor, "linea": token.linea}
         if token.tipo == "STRING":
             self.avanzar()
-            return {"tipo": "string", "valor": token.valor}
-
+            return {"tipo": "string", "valor": token.valor, "linea": token.linea}
         if token.tipo == "ID":
             nombre = token.valor
+            linea = token.linea
             self.avanzar()
             if self.actual() and self.actual().valor == "(":
                 self.consumir("SIMBOLO")
                 args = self.argumentos()
                 self.consumir("SIMBOLO")
-                return {"tipo": "llamada_funcion", "nombre": nombre, "argumentos": args}
+                return {"tipo": "llamada_funcion", "nombre": nombre, "argumentos": args, "linea": linea}
             if self.actual() and self.actual().tipo == "OP_COMPUESTO" and self.actual().valor in ["++", "--"]:
                 operador = self.actual().valor
                 self.avanzar()
-                return {"tipo": "unaria", "operador": operador, "operando": {"tipo": "id", "valor": nombre}, "prefijo": False}
-            return {"tipo": "id", "valor": nombre}
-
+                return {"tipo": "unaria", "operador": operador, "operando": {"tipo": "id", "valor": nombre, "linea": linea}, "prefijo": False, "linea": linea}
+            return {"tipo": "id", "valor": nombre, "linea": linea}
+        if token.tipo == "OP_COMPUESTO" and token.valor in ["++", "--"]:
+            op = token.valor
+            linea = token.linea
+            self.avanzar()
+            expr = self.primaria()
+            return {"tipo": "unaria", "operador": op, "operando": expr, "prefijo": True, "linea": linea}
         if token.valor == "(":
             self.consumir("SIMBOLO")
             expr = self.expresion()
             self.consumir("SIMBOLO")
             return expr
-
-        if token.tipo == "OP_COMPUESTO" and token.valor in ["++", "--"]:
-            op = token.valor
-            self.avanzar()
-            expr = self.primaria()
-            return {"tipo": "unaria", "operador": op, "operando": expr, "prefijo": True}
-
         raise Exception(f"Error sintáctico: token inesperado '{token.valor}' en línea {token.linea}")
 
     def argumentos(self):
@@ -345,10 +339,21 @@ class Parser:
     def precedencia(self, token):
         precedencias = {
             "=": 1,
-            "+=": 1, "-=" : 1, "*=" : 1, "/=" : 1,
+            "+=": 1, "-=": 1, "*=": 1, "/=": 1,
             "==": 2, "!=": 2, "<": 2, ">": 2, "<=": 2, ">=": 2,
             "+": 3, "-": 3,
             "*": 4, "/": 4, "%": 4,
-            "++": 5, "--": 5
+            "++": 5, "--": 5,
         }
         return precedencias.get(token.valor, 0)
+
+
+class CAnalizadorLenguaje(AnalizadorLenguaje):
+    def __init__(self):
+        metadata = {
+            "identidad": "C",
+            "tema": "Memoria, punteros y compilación directa",
+            "keywords": ["int", "char", "float", "struct", "typedef", "return", "*", "&"],
+            "descripcion": "C es un lenguaje de sistemas con punteros y declaracion explícita de tipos."
+        }
+        super().__init__("C", CLexer, CParser, slug="c", metadata=metadata)

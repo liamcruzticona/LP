@@ -1,7 +1,6 @@
 from flask import Blueprint, request, jsonify
-from core.lexico import AnalizadorLexico
-from core.sintactico import Parser
-from core.entropia import CalculadorEntropia
+from core.analizador_factory import get_analizador, idiomas_disponibles
+from core.semantica import ValidadorSemantico
 
 bp = Blueprint('analisis', __name__)
 
@@ -13,77 +12,63 @@ def analizar():
     """
     try:
         data = request.get_json()
-        
+
         if not data:
             return jsonify({
                 "error": "No se proporcionó JSON",
-                "sugerencia": "Envía un JSON con el campo 'codigo'"
+                "sugerencia": "Envía un JSON con los campos 'codigo' y 'lenguaje'"
             }), 400
-        
+
         codigo = data.get("codigo", "").strip()
-        
+        lenguaje = data.get("lenguaje", "c").strip().lower()
+
         if not codigo:
             return jsonify({
                 "error": "El campo 'codigo' está vacío",
                 "sugerencia": "Proporciona código válido a analizar"
             }), 400
 
-        #  LÉXICO
         try:
-            lexer = AnalizadorLexico(codigo)
-            tokens = lexer.analizar()
-        except Exception as e:
+            analizador = get_analizador(lenguaje)
+        except ValueError as e:
             return jsonify({
-                "error": f"Error léxico: {str(e)}",
-                "fase": "Análisis Léxico",
-                "sugerencia": "Verifica caracteres no permitidos o sintaxis inválida"
+                "error": str(e),
+                "fase": "Selección de Lenguaje",
+                "sugerencia": "Elige un lenguaje soportado o agrega soporte en el backend"
             }), 400
 
-        # Si no hay tokens
-        if not tokens:
+        try:
+            resultado = analizador.analizar(codigo)
+        except Exception as e:
+            return jsonify({
+                "error": f"Error de análisis: {str(e)}",
+                "fase": "Análisis Léxico/Sintáctico",
+                "sugerencia": "Revisa la estructura del código y la sintaxis del lenguaje seleccionado"
+            }), 400
+
+        if isinstance(resultado, dict) and resultado.get("tipo") == "error":
+            return jsonify({
+                "error": resultado.get("mensaje"),
+                "fase": "Análisis Sintáctico",
+                "sugerencia": "Corrige la gramática y revisa los tokens generados"
+            }), 400
+
+        if not resultado.get("tokens"):
             return jsonify({
                 "error": "No se generaron tokens",
+                "fase": "Análisis Léxico",
                 "sugerencia": "El código parece estar vacío o contiene solo comentarios"
             }), 400
 
-        #  SINTÁCTICO
-        sintactico_result = None
-        try:
-            parser = Parser(tokens)
-            sintactico_result = parser.analizar()
-            
-            # Verificar si el parser devolvió error
-            if isinstance(sintactico_result, dict) and sintactico_result.get("tipo") == "error":
-                return jsonify({
-                    "error": sintactico_result.get("mensaje"),
-                    "fase": "Análisis Sintáctico",
-                    "detalles": sintactico_result.get("errores", []),
-                    "sugerencia": "Revisa la estructura del código (funciones, declaraciones, llaves balanceadas)"
-                }), 400
-        except Exception as e:
-            return jsonify({
-                "error": f"Error sintáctico: {str(e)}",
-                "fase": "Análisis Sintáctico",
-                "sugerencia": "Verifica que las funciones tengan parámetros válidos y que los bloques estén balanceados"
-            }), 400
+        validacion = ValidadorSemantico(resultado.get("ast")).validar()
 
-        #  ENTROPÍA
-        try:
-            entropia_calc = CalculadorEntropia(tokens)
-            entropia_valor = entropia_calc.calcular()
-            estadisticas = entropia_calc.estadisticas_completas()
-        except Exception as e:
-            return jsonify({
-                "error": f"Error en cálculo de entropía: {str(e)}",
-                "fase": "Análisis de Entropía"
-            }), 400
-
-        # Respuesta exitosa
         return jsonify({
-            "tokens": [t.to_dict() for t in tokens],
-            "sintactico": sintactico_result,
-            "entropia": entropia_valor,
-            "estadisticas": estadisticas,
+            "lenguaje": resultado.get("lenguaje"),
+            "slug": resultado.get("slug"),
+            "metadata": resultado.get("metadata", {}),
+            "tokens": [t.to_dict() for t in resultado.get("tokens")],
+            "ast": resultado.get("ast"),
+            "validacion": validacion,
             "exito": True
         }), 200
 
@@ -94,17 +79,34 @@ def analizar():
         }), 500
 
 
+@bp.route('/idiomas', methods=['GET'])
+def idiomas():
+    """Endpoint para listar los lenguajes disponibles."""
+    analizadores = {
+        clave: {
+            "nombre": analizador.nombre,
+            "slug": analizador.slug,
+            "metadata": analizador.metadata,
+        }
+        for clave, analizador in [(k, get_analizador(k)) for k in idiomas_disponibles().keys()]
+    }
+    return jsonify({
+        "disponibles": analizadores
+    }), 200
+
+
 @bp.route('/info', methods=['GET'])
 def info():
     """Endpoint de información del analizador"""
     return jsonify({
-        "nombre": "Analizador Léxico y Sintáctico",
-        "version": "2.0",
-        "descripcion": "Analizador para lenguajes tipo C con soporte para estructuras de control",
+        "nombre": "Analizador Léxico y Sintáctico Multilenguaje",
+        "version": "3.0",
+        "descripcion": "Plataforma modular de análisis de código para múltiples lenguajes.",
         "caracteristicas": [
-            "Análisis léxico mejorado (strings, floats, operadores compuestos, comentarios)",
-            "Análisis sintáctico avanzado (if, while, for, expresiones complejas)",
-            "Cálculo de entropía Shannon",
-            "Manejo robusto de errores"
+            "Análisis léxico multilenguaje",
+            "Análisis sintáctico avanzado",
+            "Validación semántica básica",
+            "Estructura modular y escalable",
+            "Soporte para C y JavaScript con base para más lenguajes"
         ]
     }), 200
