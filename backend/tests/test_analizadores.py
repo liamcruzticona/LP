@@ -11,6 +11,15 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 from core.analizador_factory import get_analizador, get_validador_semantico
 from core.entropia import CalculadorEntropia
 from core.semantica.base import ValidadorSemanticoBase as ValidadorSemantico
+from core.funcional import (
+    calcular_entropia_pura,
+    map_puro, filter_puro, reduce_puro, composicion,
+    EstadisticasInmutables, TokenInmutable, ResultadoValidacion,
+    crear_multiplicador_token, crear_filtro_por_tipo, crear_contador_token,
+    decorador_pureza, decorador_log, decorador_validar_no_vacio,
+    aplicar_parcial, filtrar_y_transformar_inmutable,
+    ejemplo_imperativo_vs_funcional,
+)
 
 
 class TestsAnalizador:
@@ -370,6 +379,179 @@ class TestsAnalizador:
         except Exception as e:
             self.test("HTTP: GET /idiomas", False, str(e))
 
+    # ==================== Programacion Funcional ====================
+
+    def test_fp_entropia_pura(self):
+        """
+        PILAR 1 — FUNCIÓN PURA:
+        Dada la misma entrada, la función pura retorna el mismo resultado siempre.
+        No modifica estado externo ni produce efectos secundarios.
+        """
+        tipos = ("RESERVADA", "ID", "OPERADOR", "NUMERO", "SIMBOLO")
+        r1 = calcular_entropia_pura(tipos)
+        r2 = calcular_entropia_pura(tipos)
+        ok = r1 == r2 and r1["total"] == 5
+        self.test("FP: Entropía pura determinista", ok)
+
+    def test_fp_entropia_pura_vacia(self):
+        tipos_vacios = ()
+        r = calcular_entropia_pura(tipos_vacios)
+        ok = r["entropia"] == 0.0 and r["total"] == 0
+        self.test("FP: Entropía pura vacía", ok)
+
+    def test_fp_map_puro(self):
+        """MAP: transforma cada elemento sin mutar el original."""
+        entrada = (1, 2, 3, 4, 5)
+        resultado = map_puro(lambda x: x * 2, entrada)
+        ok = resultado == (2, 4, 6, 8, 10) and isinstance(resultado, tuple)
+        self.test("FP: Map puro", ok)
+
+    def test_fp_filter_puro(self):
+        """FILTER: filtra elementos, retorna tupla inmutable."""
+        entrada = (1, 2, 3, 4, 5, 6)
+        resultado = filter_puro(lambda x: x % 2 == 0, entrada)
+        ok = resultado == (2, 4, 6) and isinstance(resultado, tuple)
+        self.test("FP: Filter puro", ok)
+
+    def test_fp_reduce_puro(self):
+        """REDUCE: acumula valores sin estado mutable externo."""
+        entrada = (1, 2, 3, 4, 5)
+        resultado = reduce_puro(lambda a, b: a + b, entrada, 0)
+        ok = resultado == 15
+        self.test("FP: Reduce puro", ok)
+
+    def test_fp_composicion(self):
+        """COMPOSICIÓN: encadena funciones como tuberías."""
+        f1 = lambda x: x + 1
+        f2 = lambda x: x * 2
+        f3 = lambda x: x - 3
+        fn = composicion(f1, f2, f3)
+        resultado = fn(5)  # ((5+1)*2)-3 = 9
+        ok = resultado == 9
+        self.test("FP: Composicion de funciones", ok)
+
+    def test_fp_inmutabilidad_estadisticas(self):
+        """
+        PILAR 2 — INMUTABILIDAD:
+        Las estructuras de datos no se modifican; se crean copias.
+        """
+        e1 = EstadisticasInmutables(entropia=2.5, total_tokens=10)
+        e2 = e1.con_entropia(3.0)
+        ok = e1.entropia == 2.5 and e2.entropia == 3.0 and e1.total_tokens == e2.total_tokens
+        self.test("FP: Inmutabilidad Estadisticas", ok)
+
+    def test_fp_inmutabilidad_token(self):
+        """Token inmutable: no puede modificarse después de creado."""
+        t = TokenInmutable(tipo="RESERVADA", valor="int", linea=1, columna=1)
+        d = t.to_dict()
+        ok = d["tipo"] == "RESERVADA" and d["valor"] == "int"
+        self.test("FP: Token inmutable", ok)
+
+    def test_fp_validacion_inmutable(self):
+        """ResultadoValidacion: combina sin mutar."""
+        r1 = ResultadoValidacion(exito=True, errores=(), advertencias=("w1",))
+        r2 = ResultadoValidacion(exito=True, errores=(), advertencias=("w2",))
+        r3 = r1.combinar(r2)
+        ok = r3.exito and r3.advertencias == ("w1", "w2") and r1.advertencias == ("w1",)
+        self.test("FP: Resultado inmutable combinado", ok)
+
+    def test_fp_equivalencia_oop_vs_funcional(self):
+        """
+        Prueba que el cálculo OOP y el cálculo funcional puro
+        producen los mismos resultados (doble paradigma).
+        """
+        c = get_analizador("c")
+        r = c.analizar("int x = 10; float y = 3.14;")
+        calc = CalculadorEntropia(r["tokens"])
+
+        oop = calc.calcular()
+        puro = calc.calcular_puro()
+        funcional = calc.estadisticas_puras()
+
+        ok = (oop == puro["entropia"] == funcional["entropia"])
+        self.test("FP: Equivalencia OOP == Funcional", ok)
+
+    def test_fp_closure_multiplicador(self):
+        """
+        CLOSURE: Función que recuerda 'factor' del scope padre.
+        Forma funcional de tener estado sin clases ni self.
+        """
+        duplicar = crear_multiplicador_token(2)
+        triplicar = crear_multiplicador_token(3)
+        ok = duplicar(5) == 10 and triplicar(5) == 15
+        self.test("FP: Closure multiplicador", ok)
+
+    def test_fp_closure_filtro(self):
+        """CLOSURE: Crea filtros especializados por tipo de token."""
+        filtro_reservadas = crear_filtro_por_tipo("RESERVADA")
+        t1 = TokenInmutable(tipo="RESERVADA", valor="int", linea=1, columna=1)
+        t2 = TokenInmutable(tipo="ID", valor="x", linea=1, columna=5)
+        ok = filtro_reservadas(t1) and not filtro_reservadas(t2)
+        self.test("FP: Closure filtro por tipo", ok)
+
+    def test_fp_closure_contador(self):
+        """CLOSURE: Mantiene estado interno sin clases."""
+        contador = crear_contador_token()
+        c1 = contador("RESERVADA")
+        c2 = contador("RESERVADA")
+        c3 = contador("ID")
+        ok = c1 == 1 and c2 == 2 and c3 == 1
+        self.test("FP: Closure contador con estado", ok)
+
+    def test_fp_decorador_pureza(self):
+        """DECORADOR: Envuelve función sin modificar su código."""
+
+        @decorador_pureza
+        def suma_pura(a, b):
+            return a + b
+
+        ok = suma_pura(2, 3) == 5 and suma_pura.__name__ == "suma_pura"
+        self.test("FP: Decorador pureza", ok)
+
+    def test_fp_decorador_validar(self):
+        """DECORADOR: Valida entrada antes de ejecutar (FAIL FAST)."""
+
+        @decorador_validar_no_vacio
+        def entropia_segura(tipos):
+            return calcular_entropia_pura(tipos)
+
+        r1 = entropia_segura(())
+        r2 = entropia_segura(("RESERVADA", "ID", "NUMERO"))
+        ok = r1["total"] == 0 and r2["total"] == 3
+        self.test("FP: Decorador validar no vacio", ok)
+
+    def test_fp_partial_application(self):
+        """PARTIAL APPLICATION: Pre-llena argumentos de una función."""
+        def multiplicar(a: int, b: int) -> int:
+            return a * b
+
+        duplicar = aplicar_parcial(multiplicar, 2)
+        ok = duplicar(10) == 20 and callable(duplicar)
+        self.test("FP: Partial application", ok)
+
+    def test_fp_list_comprehension(self):
+        """LIST COMPREHENSION: Equivalente funcional de map + filter."""
+        class T:
+            def __init__(self, tipo, valor):
+                self.tipo = tipo
+                self.valor = valor
+
+        tokens = (T("RESERVADA", "int"), T("ID", "x"), T("RESERVADA", "float"), T("ID", "y"))
+        resultado = filtrar_y_transformar_inmutable(
+            tokens,
+            filtro=lambda t: t.tipo == "RESERVADA",
+            transformacion=lambda t: t.valor.upper()
+        )
+        ok = resultado == ("INT", "FLOAT") and isinstance(resultado, tuple)
+        self.test("FP: List comprehension (map+filter)", ok)
+
+    def test_fp_imperativo_vs_funcional(self):
+        """Comparación directa: imperativo vs funcional mismo resultado."""
+        numeros = (1, 2, 3, 4, 5, 6, 7, 8, 9, 10)
+        r = ejemplo_imperativo_vs_funcional(numeros)
+        ok = r["equivalentes"] and r["imperativo"] == 25
+        self.test("FP: Imperativo vs Funcional equivalentes", ok)
+
     # ==================== Ejecucin ====================
 
     def ejecutar_todos(self):
@@ -451,6 +633,27 @@ class TestsAnalizador:
         self.test_http_info()
         self.test_http_analizar()
         self.test_http_idiomas()
+
+        print("\n--- Programacion Funcional ---")
+        print("-" * 40)
+        self.test_fp_entropia_pura()
+        self.test_fp_entropia_pura_vacia()
+        self.test_fp_map_puro()
+        self.test_fp_filter_puro()
+        self.test_fp_reduce_puro()
+        self.test_fp_composicion()
+        self.test_fp_inmutabilidad_estadisticas()
+        self.test_fp_inmutabilidad_token()
+        self.test_fp_validacion_inmutable()
+        self.test_fp_equivalencia_oop_vs_funcional()
+        self.test_fp_closure_multiplicador()
+        self.test_fp_closure_filtro()
+        self.test_fp_closure_contador()
+        self.test_fp_decorador_pureza()
+        self.test_fp_decorador_validar()
+        self.test_fp_partial_application()
+        self.test_fp_list_comprehension()
+        self.test_fp_imperativo_vs_funcional()
 
         print("\n" + "=" * 60)
         print(f"RESULTADOS: OK={self.tests_pasados}  FAIL={self.tests_fallidos}")

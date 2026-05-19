@@ -1,0 +1,68 @@
+@startuml Diagrama de Componentes - Arquitectura del Sistema
+!theme vibrant
+title Arquitectura de Componentes y Contenedores
+
+package "Frontend Container\n(nginx:alpine :8080)" as FE {
+    [index.html] as HTML
+    [styles.css] as CSS
+    [js/modules] as JS
+    [nginx.conf\n(reverse proxy)] as NGX
+}
+
+package "Backend Container\n(Python 3.10 :5000)" as BE {
+    package "Routes" {
+        [analisis.py] as RT
+    }
+    package "Services" {
+        [analisis_service.py] as SV
+    }
+    package "Core" {
+        [token.py] as TK
+        [analizador_factory.py] as FY
+        [entropia.py] as EN
+        [funcional.py] as FP
+        package "analizadores" {
+            [c_analyzer.py] as LXC
+            [cpp_analyzer.py] as LXPP
+            [java_analyzer.py] as LXJ
+            [javascript_analyzer.py] as LXS
+            [python_analyzer.py] as LXP
+        }
+        package "semantica" {
+            [semantica_c.py] as SMC
+            [semantica_cpp.py] as SMPP
+            [semantica_java.py] as SMJ
+            [semantica_js.py] as SMS
+            [semantica_py.py] as SMP
+        }
+    }
+}
+
+cloud "CDN\nexterno" {
+    [Bootstrap 5.3]
+    [CodeMirror 5.65]
+    [Font Awesome 6]
+}
+
+actor Usuario
+
+Usuario --> FE : HTTP :8080
+FE --> NGX : rutas
+NGX --> BE : proxy /api → :5000
+HTML --> CDN : CSS/JS externos
+RT --> SV : delega
+SV --> FY : selecciona
+SV --> EN : calcula
+SV --> FP : funciones puras
+FY --> LXC
+FY --> LXPP
+FY --> LXJ
+FY --> LXS
+FY --> LXP
+FY --> SMC
+FY --> SMPP
+FY --> SMJ
+FY --> SMS
+FY --> SMP
+
+@enduml

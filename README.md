@@ -1,234 +1,249 @@
-# Analizador Léxico y Sintáctico para Lenguajes Tipo C
+# Analizador Léxico y Sintáctico Multilenguaje v4.0
 
 ## Descripción
-Este proyecto implementa un analizador léxico y sintáctico robusto para lenguajes tipo C, desarrollado bajo el paradigma de **Programación Orientada a Objetos (POO)** aplicando sus 4 pilares: **Abstracción**, **Encapsulamiento**, **Herencia** y **Polimorfismo**. El sistema permite analizar código fuente, identificar tokens, validar sintaxis y calcular métricas avanzadas como entropía de Shannon.
 
-### Pilares de POO aplicados:
-- **Abstracción**: Las clases `AnalizadorLexico`, `Parser` y `CalculadorEntropia` ocultan la complejidad interna y exponen interfaces simples.
-- **Encapsulamiento**: Atributos como `self.tokens` y `self.pos` están protegidos dentro de las clases; métodos privados con `_`.
-- **Herencia**: `Token` hereda de `TokenBase` para reutilizar atributos comunes.
-- **Polimorfismo**: Métodos como `consumir()` funcionan con cualquier tipo de token esperado; `calcular()` se redefine en subclases.
+Analizador léxico, sintáctico y semántico multilenguaje con visualización interactiva. Soporta **C, C++, Java, JavaScript y Python**, cada uno con lexer, parser, AST y validador semántico propios.
 
-## 6 Mejoras Principales Implementadas
+Implementa **doble paradigma**: Programación Orientada a Objetos (4 pilares) + Programación Funcional (2 pilares: pureza e inmutabilidad). Incluye cálculo de **Entropía de Shannon** como métrica de complejidad léxica.
 
-### 1. 🔤 Analizador Léxico Mejorado
-Soporta:
-- **Strings**: `"texto"`, `'caracteres'`
-- **Floats**: `3.14`, `2.5e-3`
-- **Operadores compuestos**: `==`, `!=`, `+=`, `-=`, `*=`, `/=`, `++`, `--`, `<=`, `>=`
-- **Comentarios**: `// comentario` (ignorados automáticamente)
-- **Palabras reservadas expandidas**: `if`, `else`, `while`, `for`, `void`, `char`, `double`, `struct`, `break`, `continue`
+---
 
-**Ejemplo léxico**:
+## Paradigmas de Programación
+
+### POO — 4 Pilares
+
+| Pilar | Aplicación en el proyecto |
+|-------|--------------------------|
+| **Abstracción** | `TokenBase`, `AnalizadorLexicoBase`, `ParserBase`, `ValidadorSemanticoBase` — definen qué hace cada componente |
+| **Herencia** | `CLikeLexerBase` → CLexer, CppLexer, JavaLexer, JavaScriptLexer; 5 validadores heredan de `ValidadorSemanticoBase` |
+| **Polimorfismo** | `sentencia()` distinto en cada parser; `validar()` distinto en cada validador; Factory retorna instancia correcta |
+| **Encapsulamiento** | Métodos `_privados`, `config.py`, `ServicioAnalisis`, Factory oculta clases concretas |
+
+### Programación Funcional — 2 Pilares
+
+| Pilar | Aplicación en el proyecto |
+|-------|--------------------------|
+| **Funciones Puras** | `calcular_entropia_pura()`, `map_puro()`, `filter_puro()`, `reduce_puro()`, `composicion()` — sin efectos secundarios |
+| **Inmutabilidad** | `EstadisticasInmutables`, `TokenInmutable`, `ResultadoValidacion` con `@dataclass(frozen=True)`, `MappingProxyType` |
+
+---
+
+## Arquitectura del Sistema
+
 ```
-Código: float pi = 3.14; // constante
-Tokens: RESERVADA(float), ID(pi), OPERADOR(=), FLOAT(3.14), SIMBOLO(;)
-(comentario ignorado)
-```
-
-### 2. 🎯 Analizador Sintáctico Avanzado
-Soporta:
-- **Declaraciones**: `int x = 10;`
-- **Funciones**: `int suma(int a, int b) { return a + b; }`
-- **Estructuras de control**:
-  - `if (condicion) { bloque } else { bloque }`
-  - `while (condicion) { bloque }`
-  - `for (init; condicion; incremento) { bloque }`
-- **Expresiones complejas**: `(a + b) * c`, `x == 5 && y != 0`
-- **Múltiples sentencias en funciones**
-- **Llamadas de función**: `printf("Hola")`, `suma(2, 3)`
-
-**Ejemplo sintáctico**:
-```
-Código: if (x > 5) { y = 1; } else { y = 0; }
-Árbol sintáctico:
-{
-  "tipo": "if",
-  "condicion": {"binaria": "x > 5"},
-  "bloque_if": [{"tipo": "asignacion", ...}],
-  "bloque_else": [{"tipo": "asignacion", ...}]
-}
-```
-
-### 3. 📊 Entropía de Shannon (Análisis avanzado)
-Calcula: `H = -sum(p_i * log2(p_i))` donde p_i es la probabilidad de cada tipo de token.
-
-**Métricas incluidas**:
-- **Entropía Shannon**: Medida de "aleatoriedad" en la distribución de tokens (0-10).
-- **Entropía máxima**: Máximo valor posible para n tipos de tokens.
-- **Normalización**: Valor entre 0 y 1 (0=predecible, 1=aleatorio).
-- **Densidad**: Ratio de tipos únicos / total de tokens.
-- **Distribución**: Frecuencia y porcentaje de cada tipo.
-
-**Ejemplo**:
-```json
-{
-  "entropia_shannon": 2.5847,
-  "entropia_maxima": 3.0,
-  "normalizacion": 0.8616,
-  "total_tokens": 12,
-  "tipos_unicos": 7,
-  "densidad": 0.5833,
-  "distribucion": {
-    "RESERVADA": {"frecuencia": 3, "porcentaje": 25.0},
-    "ID": {"frecuencia": 2, "porcentaje": 16.67},
-    ...
-  }
-}
-```
-
-### 4. ⚠️ Manejo Robusto de Errores
-- **Mensajes claros**: Especifican qué salió mal y dónde.
-- **Sugerencias útiles**: Proponen soluciones basadas en el tipo de error.
-- **Recuperación gradual**: Intenta continuar análisis tras ciertos errores.
-- **Detalles técnicos**: Incluye fase del error (léxica, sintáctica), línea y sugerencia.
-
-**Ejemplo**:
-```json
-{
-  "error": "Error sintáctico: se esperaba OPERADOR",
-  "fase": "Análisis Sintáctico",
-  "sugerencia": "Verifica que las funciones tengan parámetros válidos y que los bloques estén balanceados",
-  "detalles": ["Error en línea 3: se esperaba ';'"]
-}
+analizador-proyecto/
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── .gitignore
+├── informe.tex                    ← Documento académico LaTeX
+├── diagramas/                     ← UML (Casos de Uso + Clases)
+├── backend/
+│   ├── app.py                     ← Punto de entrada Flask
+│   ├── config.py                  ← Configuración centralizada
+│   ├── routes/
+│   │   └── analisis.py            ← Endpoints HTTP (capa presentación)
+│   ├── services/
+│   │   └── analisis_service.py    ← Lógica de negocio (capa servicios)
+│   ├── core/
+│   │   ├── token.py               ← TokenBase, Token (POO: Abstracción + Herencia)
+│   │   ├── analizador_factory.py  ← Factory Pattern (POO: Polimorfismo)
+│   │   ├── entropia.py            ← Shannon + doble paradigma (OOP + FP)
+│   │   ├── funcional.py           ← Funciones puras + Inmutabilidad (FP)
+│   │   ├── semantica/             ← Validadores por lenguaje (POO: Herencia + Polimorfismo)
+│   │   │   ├── base.py
+│   │   │   ├── semantica_c.py
+│   │   │   ├── semantica_cpp.py
+│   │   │   ├── semantica_java.py
+│   │   │   ├── semantica_js.py
+│   │   │   └── semantica_py.py
+│   │   └── analizadores/          ← Lexers + Parsers por lenguaje
+│   │       ├── base.py            ← Clases abstractas
+│   │       ├── base_clike.py      ← Herencia C-like
+│   │       ├── c_analyzer.py
+│   │       ├── cpp_analyzer.py
+│   │       ├── java_analyzer.py
+│   │       ├── javascript_analyzer.py
+│   │       └── python_analyzer.py
+│   └── tests/
+│       └── test_analizadores.py   ← 60 pruebas unitarias + HTTP + FP
+├── frontend/
+│   ├── index.html                 ← Shell HTML
+│   ├── nginx.conf                 ← Proxy reverso (Docker)
+│   ├── css/
+│   │   └── styles.css             ← 5 temas (c, cpp, java, js, python)
+│   └── js/
+│       ├── config.js              ← Configuración
+│       ├── profiles.js            ← Perfiles de lenguaje + ejemplos
+│       ├── editor.js              ← CodeMirror + atajos
+│       ├── renderer.js            ← Visualización AST + copiar
+│       ├── api.js                 ← Conexión backend + spinner
+│       └── app.js                 ← Orquestador UI + comparador
+└── diagramas/
+    ├── casos_de_uso.puml / .svg / .png
+    └── diagrama_clases.puml / .svg / .png
 ```
 
-### 5. ✅ Validación Frontend
-- **Validación de longitud**: Máximo 10,000 caracteres.
-- **Advertencias en tiempo real**: Detecta llaves/paréntesis sin cerrar.
-- **Validación de entrada vacía**: Rechaza código vacío con mensaje claro.
-- **Manejo mejorado de errores HTTP**: Muestra sugerencias del servidor.
+---
 
-### 6. 🧪 Pruebas Unitarias
-Archivo: `backend/tests/test_analizadores.py`
+## Diferenciación por Lenguaje
 
-**Cobertura**:
-- 5 tests léxicos (declaraciones, strings, floats, operadores, comentarios)
-- 6 tests sintácticos (declaraciones, funciones, if/else, while, for, expresiones anidadas)
-- 3 tests de entropía (cálculo, estadísticas, normalización)
-- 3 tests de manejo de errores (código vacío, léxico inválido, sintáctico inválido)
+| Característica | C | C++ | Java | JavaScript | Python |
+|---------------|:--:|:---:|:----:|:----------:|:------:|
+| Keywords | 15 | 25 | 24 | 13 | 19 |
+| Operadores únicos | `*`, `&` | `<<`, `>>` | -- | `===`, `!==`, `=>` | `**`, `//=` |
+| Comentarios | `//`, `/* */` | `//`, `/* */` | `//`, `/* */` | `//`, `/* */` | `#` |
+| Tokens especiales | PUNTERO | PUNTERO, PREPROC | -- | -- | INDENT, DEDENT |
+| Clases | -- | `class` | `class` (obligatorio) | -- | `class` |
+| Funciones flecha | -- | Lambda | -- | `=>` | -- |
+| `import`/`from` | -- | -- | `import`, `package` | -- | `import`, `from` |
+| `elif` | -- | -- | -- | -- | Sí |
+| Type Checking | Sí | Sí | Sí | -- | -- |
+| Tema visual | Azul | Púrpura | Naranja | Amarillo | Verde |
 
-**Ejecutar tests**:
-```bash
-docker-compose exec backend python -m tests.test_analizadores
-```
-
-**Salida esperada**:
-```
-✅ Léxico: Declaración simple
-✅ Léxico: Strings
-✅ Léxico: Floats
-... (17 tests más)
-RESULTADOS: 17✅ | 0❌
-```
+---
 
 ## Instalación
-1. Clona el repositorio:
-   ```bash
-   git clone <url-del-repo>
-   cd analizador-proyecto
-   ```
 
-2. Construye y ejecuta con Docker:
-   ```bash
-   docker-compose up --build
-   ```
+### Opción 1: Docker (recomendado)
 
-3. Accede a la interfaz: `http://localhost:8080`
-   - Backend API: `http://localhost:5000`
-   - Info API: `http://localhost:5000/info`
+```bash
+git clone https://github.com/liamcruzticona/LP.git
+cd LP
+docker-compose up --build
+```
+
+- Frontend: `http://localhost:8080`
+- Backend API: `http://localhost:5000`
+
+### Opción 2: Desarrollo local
+
+```bash
+pip install -r requirements.txt
+python backend/app.py                          # Terminal 1: Backend
+python -m http.server 8080 --directory frontend # Terminal 2: Frontend
+```
+
+- Frontend: `http://127.0.0.1:8080`
+- Backend API: `http://127.0.0.1:5000`
+
+---
 
 ## Uso
 
 ### Interfaz Web
-- Escribe código tipo C en el editor CodeMirror (con resaltado de sintaxis).
-- Selecciona un ejemplo predefinido del dropdown.
-- Haz clic en "Analizar".
-- Visualiza tokens, árbol sintáctico y estadísticas de entropía en pestañas.
+1. Selecciona el lenguaje en el dropdown (C, C++, Java, JavaScript, Python)
+2. Escribe código o carga un ejemplo predefinido
+3. Presiona **Ctrl+Enter** o clic en **Analizar**
+4. Explora los resultados en 4 pestañas: Tokens, AST, Semántica, Estadísticas
+
+### Atajos de teclado
+| Atajo | Acción |
+|-------|--------|
+| `Ctrl+Space` | Autocompletado |
+| `Ctrl+Enter` | Ejecutar análisis |
 
 ### API REST
-**Endpoint**: `POST /analizar`
 
-**Request**:
+**`POST /analizar`**
 ```json
 {
-  "codigo": "int x = 10;"
+  "codigo": "int x = 5;",
+  "lenguaje": "c"
 }
 ```
 
-**Response**:
+Respuesta:
 ```json
 {
-  "tokens": [...],
-  "sintactico": [...],
-  "estadisticas": {...},
+  "lenguaje": "C",
+  "tokens": [{"tipo": "RESERVADA", "valor": "int", "linea": 1, "columna": 1}, ...],
+  "ast": [{"tipo": "declaracion", "tipo_dato": "int", "identificador": "x", ...}],
+  "validacion": {"exito": true, "errores": [], "advertencias": []},
+  "estadisticas": {"entropia_shannon": 2.3219, "normalizacion": 1.0, ...},
   "exito": true
 }
 ```
 
-## Ejemplos de Código Soportado
-
-| Tipo | Ejemplo |
-|------|---------|
-| Declaración | `int x = 10;` |
-| Float | `float pi = 3.14;` |
-| String | `char* msg = "Hola";` |
-| Función | `int suma(int a, int b) { return a + b; }` |
-| If/Else | `if (x > 5) { y = 1; } else { y = 0; }` |
-| While | `while (i < 10) { i++; }` |
-| For | `for (int i = 0; i < 10; i++) { x += i; }` |
-| Expresión anidada | `int z = (a + b) * c;` |
-
-## Metodología
-- **Análisis Léxico**: Tokenización usando expresiones regulares con patrones ordenados por prioridad.
-- **Análisis Sintáctico**: Parsing recursivo descendente con precedencia de operadores.
-- **Entropía**: Cálculo de Shannon con análisis estadístico completo.
-- **Arquitectura**: Separación backend (Flask) / frontend (HTML/JS/CodeMirror) con Docker.
-- **Testing**: Suite completa de pruebas unitarias (17 tests).
-
-## Resultados
-✅ **Análisis léxico**: Identifica 9+ tipos de tokens (números, strings, floats, operadores compuestos, etc.)  
-✅ **Análisis sintáctico**: Valida 7+ estructuras (declaraciones, funciones, if/while/for, expresiones complejas)  
-✅ **Entropía Shannon**: Calcula con 5 métricas adicionales (máxima, normalización, densidad, etc.)  
-✅ **Manejo de errores**: 15+ casos de error con sugerencias contextuales  
-✅ **Validación frontend**: 3+ validaciones previas al análisis  
-✅ **Tests**: 17 pruebas unitarias con 100% de cobertura en funcionalidades clave
-
-## Arquitectura
-```
-analizador-proyecto/
-├── backend/
-│   ├── core/
-│   │   ├── lexico.py          (análisis léxico mejorado)
-│   │   ├── sintactico.py      (análisis sintáctico avanzado)
-│   │   ├── token.py           (definición de tokens con POO)
-│   │   └── entropia.py        (entropía Shannon + estadísticas)
-│   ├── routes/
-│   │   └── analisis.py        (API con manejo de errores robusto)
-│   ├── tests/
-│   │   └── test_analizadores.py  (17 pruebas unitarias)
-│   ├── app.py                 (aplicación Flask)
-│   └── requirements.txt
-├── frontend/
-│   └── index.html             (interfaz con validación)
-├── docker/
-│   └── Dockerfile
-├── docker-compose.yml
-└── README.md
-```
-
-## Contribución
-1. Fork el repo.
-2. Crea una rama para tu feature.
-3. Envía un PR.
-
-## Licencia
-MIT
-
-## Autor
-Desarrollado como proyecto académico de Lenguaje de Programación (Semestre 7)
+**`GET /idiomas`** — Lista los lenguajes soportados  
+**`GET /info`** — Metadata del sistema
 
 ---
 
-**Última actualización**: 4 de mayo de 2026  
-**Versión**: 2.0 (Versión Robusta con 6 mejoras principales)
+## Pruebas
+
+```bash
+python backend/tests/test_analizadores.py
+```
+
+**60 pruebas, 0 fallos:**
+
+| Categoría | Tests |
+|-----------|:-----:|
+| Lenguaje C | 12 |
+| Lenguaje C++ | 5 |
+| Lenguaje Java | 7 |
+| Lenguaje JavaScript | 5 |
+| Lenguaje Python | 8 |
+| Semántica + Entropía | 4 |
+| Manejo de errores | 3 |
+| Factory / POO | 3 |
+| Integración HTTP | 3 |
+| Programación Funcional | 10 |
+| **TOTAL** | **60** |
+
+---
+
+## Funcionalidades
+
+- Análisis léxico con tokens personalizados por lenguaje
+- Análisis sintáctico con parser recursivo descendente y AST propio por lenguaje
+- Validación semántica: scope de variables, redeclaración, uso sin declaración, type checking (C/C++/Java)
+- Entropía de Shannon + barra visual normalizada
+- Panel de Teoría de la Información en tiempo real
+- Comparador sintáctico entre los 5 lenguajes con resalte dinámico
+- Editor CodeMirror con syntax highlighting, autocompletado y bracket matching
+- 5 temas visuales (uno por lenguaje) con cambio dinámico de colores e íconos
+- Ejemplos automáticos por lenguaje
+- Arquitectura en 3 capas: routes → services → core
+- Factory Pattern para selección dinámica de analizador/validador
+- Doble paradigma: POO (4 pilares) + Programación Funcional (pureza + inmutabilidad)
+- Contenedorizado con Docker + Nginx reverse proxy
+- 60 pruebas automatizadas (unitarias + HTTP + funcionales)
+
+---
+
+## Diagramas UML
+
+Disponibles en la carpeta `diagramas/` (PlantUML + SVG + PNG):
+
+- **Casos de Uso**: 10 casos con relaciones `<<include>>` y `<<extend>>`
+- **Clases**: Arquitectura POO completa con los 4 pilares anotados
+
+---
+
+## Tecnologías
+
+| Capa | Tecnología |
+|------|-----------|
+| Backend | Python 3.13 + Flask |
+| Frontend | HTML5, CSS3, JavaScript (ES6) |
+| Editor | CodeMirror 5.65.2 |
+| Estilos | Bootstrap 5.3.0 |
+| Íconos | Font Awesome 6.0.0 |
+| Contenedores | Docker + Docker Compose 3.9 |
+| Servidor web | Nginx Alpine |
+| Diagramas | PlantUML |
+
+---
+
+## Autor
+
+Liam Cruz Ticona — Proyecto académico del curso de Lenguajes de Programación  
+Universidad Nacional del Altiplano — Facultad de Ingeniería de Sistemas  
+Semestre 2026-I
+
+---
+
+**Versión**: 4.0  
+**Última actualización**: Mayo 2026

@@ -1,0 +1,72 @@
+@startuml Diagrama de Estados - Ciclo de Vida del Análisis
+!theme vibrant
+title Máquina de Estados del Proceso de Análisis
+
+[*] --> Idle : Inicio
+
+state Idle {
+    [*] --> EditorListo
+    EditorListo : Código cargado
+    EditorListo : Lenguaje seleccionado
+}
+
+Idle --> Enviando : Ctrl+Enter / Botón Analizar
+
+state Enviando {
+    [*] --> ValidandoEntrada
+    ValidandoEntrada : ¿Código vacío?
+    ValidandoEntrada --> HTTP_POST : código válido
+    HTTP_POST : POST /analizar
+}
+
+Enviando --> Analizando : Backend recibe
+Enviando --> Idle : Error: código vacío
+
+state Analizando {
+    [*] --> Tokenizando
+    Tokenizando : Regex por lenguaje
+    Tokenizando --> Parseando : tokens generados
+
+    Parseando : Descenso recursivo
+    Parseando --> ValidandoSemantica : AST construido
+
+    ValidandoSemantica : Scope + Type Check
+    ValidandoSemantica --> CalculandoEntropia : validación lista
+
+    CalculandoEntropia : H = -Σ p·log₂(p)
+    CalculandoEntropia --> Empaquetando : entropía calculada
+    Empaquetando : JSON unificado
+}
+
+Analizando --> MostrandoResultados : Éxito
+Analizando --> ErrorLexico : Token no reconocido
+Analizando --> ErrorSintactico : Estructura inválida
+
+state ErrorLexico {
+    [*] --> LexicoDetectado
+    LexicoDetectado : Símbolo no válido
+}
+
+state ErrorSintactico {
+    [*] --> SintacticoDetectado
+    SintacticoDetectado : Token inesperado
+}
+
+ErrorLexico --> Idle : Mostrar error
+ErrorSintactico --> Idle : Mostrar error
+
+state MostrandoResultados {
+    [*] --> TabTokens
+    TabTokens : Lista JSON de tokens
+    TabTokens --> TabAST : click
+    TabAST : Árbol HTML
+    TabAST --> TabSemantica : click
+    TabSemantica : Errores y advertencias
+    TabSemantica --> TabEstadisticas : click
+    TabEstadisticas : Entropía + barra
+    TabEstadisticas --> TabTokens : click
+}
+
+MostrandoResultados --> Idle : Nuevo análisis / Limpiar
+
+@enduml

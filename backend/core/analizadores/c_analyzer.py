@@ -77,6 +77,58 @@ class CParser(CLikeParserBase):
         if token.tipo in ("ID", "NUMERO", "FLOAT", "STRING") or token.valor == "(":
             return self.sentencia_expresion()
         raise Exception(
+            f"Error sintactico C: token inesperado '{token.valor}' "
+            f"en linea {token.linea}"
+        )
+
+    def _declaracion_c(self):
+        tipo = self.consumir("RESERVADA")
+        while self.actual() and self.actual().tipo == "PUNTERO":
+            self.consumir("PUNTERO")
+        identificador = self.consumir("ID")
+        valor = None
+        if (
+            self.actual()
+            and self.actual().tipo == "OPERADOR"
+            and self.actual().valor == "="
+        ):
+            self.consumir("OPERADOR")
+            valor = self.expresion()
+        self.consumir("SIMBOLO", "se esperaba ';'")
+        return {
+            "tipo": "declaracion",
+            "tipo_dato": tipo.valor,
+            "identificador": identificador.valor,
+            "linea": tipo.linea,
+            "valor": valor,
+        }
+
+    def declaracion_o_funcion(self):
+        pos_guardada = self.pos
+        try:
+            return super().funcion()
+        except Exception:
+            self.pos = pos_guardada
+            return self._declaracion_c()
+
+    def _primaria(self):
+        token = self.actual()
+        if token and token.tipo == "PUNTERO" and token.valor in ("*", "&"):
+            op = token.valor
+            linea = token.linea
+            self.avanzar()
+            operando = super()._primaria()
+            return {
+                "tipo": "unaria",
+                "operador": op,
+                "operando": operando,
+                "prefijo": True,
+                "linea": linea,
+            }
+        return super()._primaria()
+        if token.tipo in ("ID", "NUMERO", "FLOAT", "STRING") or token.valor == "(":
+            return self.sentencia_expresion()
+        raise Exception(
             f"Error sintáctico: token inesperado '{token.valor}' "
             f"en línea {token.linea}"
         )

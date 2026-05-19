@@ -53,12 +53,20 @@ class JavaParser(CLikeParserBase):
         token = self.actual()
         if not token:
             return None
-        if token.tipo == "RESERVADA" and token.valor == "class":
-            return self._clase()
         if token.tipo == "RESERVADA" and token.valor == "import":
             return self._declaracion_import()
         if token.tipo == "RESERVADA" and token.valor == "package":
             return self._declaracion_package()
+        if token.tipo == "RESERVADA" and token.valor in ("public", "private", "protected"):
+            self.consumir("RESERVADA")
+            if self.actual() and self.actual().valor == "class":
+                return self._clase()
+            raise Exception(
+                f"Error sintactico Java: se esperaba 'class' despues del modificador "
+                f"en linea {token.linea}"
+            )
+        if token.tipo == "RESERVADA" and token.valor == "class":
+            return self._clase()
         return self.sentencia()
 
     def _declaracion_import(self):
@@ -101,9 +109,49 @@ class JavaParser(CLikeParserBase):
         if token.tipo in ("ID", "NUMERO", "FLOAT", "STRING") or token.valor == "(":
             return self.sentencia_expresion()
         raise Exception(
-            f"Error sintáctico Java: token inesperado '{token.valor}' "
-            f"en línea {token.linea}"
+            f"Error sintactico Java: token inesperado '{token.valor}' "
+            f"en linea {token.linea}"
         )
+
+    def _id_primaria(self, token):
+        nombre = token.valor
+        linea = token.linea
+        self.avanzar()
+        nodo = {"tipo": "id", "valor": nombre, "linea": linea}
+        while self.actual() and self.actual().valor == ".":
+            self.consumir("SIMBOLO")
+            miembro = self.consumir("ID")
+            nodo = {
+                "tipo": "miembro",
+                "objeto": nodo,
+                "propiedad": miembro.valor,
+                "linea": miembro.linea,
+            }
+        if self.actual() and self.actual().valor == "(":
+            self.consumir("SIMBOLO")
+            args = self._argumentos()
+            self.consumir("SIMBOLO")
+            return {
+                "tipo": "llamada_funcion",
+                "nombre": nombre,
+                "argumentos": args,
+                "linea": linea,
+            }
+        if (
+            self.actual()
+            and self.actual().tipo == "OP_COMPUESTO"
+            and self.actual().valor in ["++", "--"]
+        ):
+            operador = self.actual().valor
+            self.avanzar()
+            return {
+                "tipo": "unaria",
+                "operador": operador,
+                "operando": nodo,
+                "prefijo": False,
+                "linea": linea,
+            }
+        return nodo
 
     def _clase(self):
         self.consumir("RESERVADA")

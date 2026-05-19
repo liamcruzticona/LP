@@ -11,9 +11,9 @@ const languageProfiles = {
         description: "C es un lenguaje de sistemas con punteros, estructuras y tipos estáticos.",
         theme: "theme-c",
         examples: [
-            "int *p; int x = 10; p = &x;",
-            "struct Punto { int x; int y; };",
+            "int x = 10; int *p = &x;",
             "int suma(int a, int b) { return a + b; }",
+            "if (x > 0) { x = 1; } else { x = 0; }",
             "for (int i = 0; i < 5; i++) { printf(\"%d\\n\", i); }"
         ],
         keywords: ["int", "char", "float", "struct", "typedef", "return", "*", "&"],
@@ -27,9 +27,9 @@ const languageProfiles = {
         theme: "theme-cpp",
         examples: [
             "int main() { cout << \"Hola C++\" << endl; return 0; }",
-            "class Persona { public: string nombre; };",
-            "vector<int> datos = {1, 2, 3};",
-            "auto suma = [](int a, int b) { return a + b; };"
+            "class Persona { public: int edad; };",
+            "using namespace std; int suma(int a, int b) { return a + b; }",
+            "if (x > 0) { x = 1; } else { x = 0; }"
         ],
         keywords: ["class", "namespace", "std", "auto", "new", "delete", "cout", "cin"],
         hintWords: ["class", "namespace", "using", "std", "cout", "cin", "vector", "string", "auto", "new", "delete"]
@@ -41,10 +41,10 @@ const languageProfiles = {
         description: "Java exige clases y métodos públicos, con un estilo orientado a objetos y gestión automática de memoria.",
         theme: "theme-java",
         examples: [
-            "public class Prueba {\n    public static void main(String[] args) {\n        System.out.println(\"Hola Java\");\n    }\n}\n",
+            "public class Prueba { public static void main(String[] args) { System.out.println(\"Hola Java\"); } }",
             "class Persona { private String nombre; }",
-            "public int sumar(int a, int b) { return a + b; }",
-            "if (x > 0) { System.out.println(x); } else { System.out.println(-x); }"
+            "public class Calculadora { public int sumar(int a, int b) { return a + b; } }",
+            "public class X { void m() { if (x > 0) { x = 1; } else { x = 2; } } }"
         ],
         keywords: ["class", "public", "static", "void", "String", "new", "extends", "implements"],
         hintWords: ["class", "public", "static", "void", "String", "new", "extends", "implements", "if", "for", "while"]
@@ -76,8 +76,8 @@ const languageProfiles = {
             "for i in range(5):\n    print(i)\n",
             "if x > 0:\n    print('positivo')\nelse:\n    print('negativo')\n"
         ],
-        keywords: ["def", "class", "if", "elif", "else", "for", "in", "return", "lambda"],
-        hintWords: ["def", "class", "import", "for", "in", "if", "elif", "else", "return", "print", "self"]
+        keywords: ["def", "class", "if", "elif", "else", "for", "in", "return", "import", "from", "lambda"],
+        hintWords: ["def", "class", "import", "from", "for", "in", "if", "elif", "else", "return", "print", "self"]
     }
 };
 
@@ -92,16 +92,16 @@ const syntaxComparison = {
     function: {
         c: "int suma(int a, int b) { return a + b; }",
         cpp: "int suma(int a, int b) { return a + b; }",
-        java: "int suma(int a, int b) { return a + b; }",
+        java: "public class X { int suma(int a, int b) { return a + b; } }",
         javascript: "const suma = (a, b) => a + b;",
         python: "def suma(a, b):\n    return a + b"
     },
     if: {
-        c: "if (x > 0) { return 1; }",
-        cpp: "if (x > 0) { return 1; }",
-        java: "if (x > 0) { return 1; }",
-        javascript: "if (x > 0) { return 1; }",
-        python: "if x > 0:\n    return 1"
+        c: "if (x > 0) { x = 1; }",
+        cpp: "if (x > 0) { x = 1; }",
+        java: "if (x > 0) { x = 1; }",
+        javascript: "if (x > 0) { x = 1; }",
+        python: "if x > 0:\n    x = 1"
     },
     loop: {
         c: "for (int i = 0; i < 5; i++) { }",

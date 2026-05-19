@@ -1,0 +1,36 @@
+@startuml Diagrama de Casos de Uso
+!theme vibrant
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Estudiante / Ingeniero" as User
+
+rectangle "Analizador Léxico y Sintáctico Multilenguaje v4.0" {
+  usecase "Seleccionar lenguaje\n(C, C++, Java, JS, Python)" as UC1
+  usecase "Escribir / Editar código\n(Editor CodeMirror)" as UC2
+  usecase "Ejecutar análisis\n(Ctrl+Enter / Botón)" as UC3
+  usecase "Ver Tokens\n(Análisis Léxico)" as UC4
+  usecase "Ver AST\n(Árbol Sintáctico)" as UC5
+  usecase "Ver Validación Semántica\n(Scope + Type Check)" as UC6
+  usecase "Ver Estadísticas\n(Entropía de Shannon)" as UC7
+  usecase "Comparar Sintaxis\nentre lenguajes" as UC8
+  usecase "Cargar ejemplos\nautomáticos" as UC9
+  usecase "Cambiar tema visual\npor lenguaje" as UC10
+}
+
+User --> UC1
+User --> UC2
+User --> UC3
+User --> UC9
+User --> UC8
+User --> UC10
+
+UC3 ..> UC4 : <<include>>
+UC3 ..> UC5 : <<include>>
+UC3 ..> UC6 : <<include>>
+UC3 ..> UC7 : <<include>>
+
+UC1 ..> UC9 : <<extend>>
+UC1 ..> UC10 : <<extend>>
+
+@enduml

@@ -1,0 +1,59 @@
+@startuml Diagrama de Actividades - Flujo de Análisis
+!theme vibrant
+title Flujo de Análisis Léxico, Sintáctico y Semántico
+
+start
+:Usuario selecciona lenguaje\n(C, C++, Java, JS, Python);
+:Usuario escribe / edita código\nen el editor CodeMirror;
+:Presiona Ctrl+Enter\no clic en "Analizar";
+
+partition "Frontend" {
+  :Envía POST /analizar\ncon {código, lenguaje};
+}
+
+partition "Backend - Capa Routes" {
+  :Recibe petición HTTP;
+  :Valida JSON y parámetros;
+}
+
+partition "Backend - Capa Services" {
+  :ServicioAnalisis\norquesta el flujo;
+  :Factory selecciona\nanalizador por lenguaje;
+}
+
+fork
+  partition "Lexer" {
+    :Tokeniza código fuente\n(regex específicos del lenguaje);
+    :Ignora comentarios,\nespacios y preprocesador;
+  }
+fork again
+  partition "Parser" {
+    :Parseo recursivo descendente;
+    :Construye AST\ncon nodos específicos;
+  }
+end fork
+
+partition "Semántica" {
+  :Validador semántico\nrecorre el AST;
+  :Verifica scope de variables;
+  :Detecta redeclaraciones;
+  :Type checking\n(advertencias si aplica);
+}
+
+partition "Entropía" {
+  :Calcula frecuencias\nde tipos de token;
+  :Calcula H = -Σ p·log₂(p);
+  :Normaliza entropía (0-1);
+}
+
+:Empaqueta resultado\nen JSON unificado;
+
+partition "Frontend" {
+  :Recibe JSON;
+  :Renderiza Tokens, AST,\nSemántica, Estadísticas;
+  :Actualiza barra de entropía\ny tabla comparativa;
+}
+
+stop
+
+@enduml

@@ -1,0 +1,60 @@
+@startuml Diagrama de Secuencia - Petición de Análisis
+!theme vibrant
+title Interacción Frontend ↔ Backend ↔ Core
+
+actor Usuario as U
+participant "Frontend\n(HTML/JS)" as FE
+participant "Routes\n(Flask)" as RT
+participant "Services\n(ServicioAnalisis)" as SV
+participant "Factory\n(analizador_factory)" as FY
+participant "Lexer\n(por lenguaje)" as LX
+participant "Parser\n(por lenguaje)" as PR
+participant "Semántica\n(por lenguaje)" as SM
+participant "Entropía\n(CalculadorEntropia)" as EN
+
+U -> FE: Escribe código + selecciona lenguaje
+U -> FE: Ctrl+Enter
+
+FE -> RT: POST /analizar\n{ codigo, lenguaje }
+
+RT -> RT: Validar JSON
+RT -> SV: analizar_codigo(codigo, lenguaje)
+
+SV -> FY: get_analizador(lenguaje)
+FY --> SV: AnalizadorLenguaje específico
+
+SV -> LX: analizar(código)
+activate LX
+LX -> LX: Tokenizar con regex
+LX --> SV: list[Token]
+deactivate LX
+
+SV -> PR: analizar(tokens)
+activate PR
+PR -> PR: Descenso recursivo
+PR --> SV: list[AST]
+deactivate PR
+
+SV -> FY: get_validador_semantico(lenguaje, ast)
+FY --> SV: ValidadorSemantico específico
+
+SV -> SM: validar(ast)
+activate SM
+SM -> SM: Scope + Type Check
+SM --> SV: { exito, errores, advertencias }
+deactivate SM
+
+SV -> EN: estadisticas_completas()
+activate EN
+EN -> EN: H = -Σ p·log₂(p)
+EN --> SV: { entropia, normalizacion, ... }
+deactivate EN
+
+SV --> RT: dict resultado completo
+
+RT --> FE: JSON 200 OK
+
+FE -> FE: Renderizar Tokens\nRenderizar AST\nRenderizar Semántica\nRenderizar Estadísticas
+FE --> U: Interfaz actualizada
+
+@enduml
