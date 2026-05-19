@@ -3,160 +3,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Analizador Léxico y Sintáctico Multilenguaje</title>
+    <title>Analizador Léxico y Sintáctico Multilenguaje v4.0</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/theme/material-darker.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.css">
-
-    <style>
-        :root {
-            color-scheme: dark;
-            --bg: #0b1220;
-            --surface: #111928;
-            --surface-soft: #1f2937;
-            --text: #e2e8f0;
-            --muted: #94a3b8;
-            --border: rgba(148, 163, 184, 0.18);
-            --accent: #38bdf8;
-        }
-
-        body {
-            margin: 0;
-            min-height: 100vh;
-            background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), transparent 28%),
-                        linear-gradient(180deg, #020617 0%, #0b1220 100%);
-            color: var(--text);
-            font-family: Inter, system-ui, sans-serif;
-        }
-
-        .app-shell {
-            padding: 32px;
-        }
-
-        .surface-card {
-            background: rgba(15, 23, 42, 0.95);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            box-shadow: 0 40px 120px rgba(15, 23, 42, 0.35);
-        }
-
-        .section-title {
-            color: var(--text);
-            margin-bottom: 0.75rem;
-        }
-
-        .CodeMirror {
-            height: 420px;
-            border-radius: 18px;
-            border: 1px solid rgba(148, 163, 184, 0.18);
-        }
-
-        .tag-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.5rem 0.85rem;
-            border-radius: 999px;
-            background: rgba(56, 189, 248, 0.12);
-            color: #bef264;
-            border: 1px solid rgba(56, 189, 248, 0.18);
-            font-size: 0.88rem;
-        }
-
-        .result-card {
-            background: #111827;
-            border: 1px solid rgba(148, 163, 184, 0.14);
-            border-radius: 20px;
-        }
-
-        .badge-accent {
-            background: linear-gradient(135deg, var(--accent), rgba(56, 189, 248, 0.28));
-            color: #fff;
-        }
-
-        .code-meta {
-            color: var(--muted);
-            font-size: 0.95rem;
-        }
-
-        .status-chip {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.45rem 0.8rem;
-            border-radius: 999px;
-            background: rgba(96, 165, 250, 0.14);
-            color: #e2e8f0;
-            border: 1px solid rgba(96, 165, 250, 0.2);
-            font-size: 0.92rem;
-        }
-
-        .hint-status {
-            color: #38bdf8;
-        }
-
-        .code-panel {
-            background: #0f172a;
-            border: 1px solid rgba(148, 163, 184, 0.12);
-            border-radius: 20px;
-            padding: 1.2rem;
-        }
-
-        .language-card {
-            border: 1px solid rgba(148, 163, 184, 0.12);
-            border-radius: 20px;
-            padding: 1.25rem;
-            margin-bottom: 1rem;
-        }
-
-        .language-card h5 {
-            margin-bottom: 0.75rem;
-        }
-
-        .syntax-table th,
-        .syntax-table td {
-            vertical-align: top;
-            border-color: rgba(148, 163, 184, 0.12);
-        }
-
-        .code-panel pre {
-            background: rgba(15, 23, 42, 0.9);
-            border-radius: 16px;
-            padding: 1rem;
-            color: var(--text);
-        }
-
-        .theme-c { --accent: #38bdf8; }
-        .theme-cpp { --accent: #8b5cf6; }
-        .theme-java { --accent: #f97316; }
-        .theme-javascript { --accent: #facc15; }
-        .theme-python { --accent: #22c55e; }
-    </style>
+    <link rel="stylesheet" href="css/styles.css">
 </head>
 <body class="theme-c">
 <div class="container app-shell">
     <div class="row gy-4">
+
+        <!-- Header -->
         <div class="col-12">
             <div class="d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-start">
                 <div>
                     <span class="tag-pill"><i class="fas fa-code"></i> Analizador Multilenguaje</span>
                     <h1 class="section-title mt-3">Análisis real para C, C++, Java, JavaScript y Python</h1>
-                    
                 </div>
                 <div class="text-end">
-                    <span class="badge badge-accent px-3 py-2">Prototipo de compilador visual</span>
+                    <span class="badge badge-accent px-3 py-2">Arquitectura en Capas + POO</span>
                 </div>
             </div>
         </div>
 
+        <!-- Editor + Resultados -->
         <div class="col-xl-8">
             <div class="surface-card p-4">
                 <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-4">
                     <div>
                         <h4 class="mb-2">Editor inteligente</h4>
-                        <p class="code-meta mb-0">Resaltado, autocompletado y aviso de inconsistencias según el lenguaje seleccionado.</p>
+                        <p class="code-meta mb-0">Resaltado, autocompletado y detección de lenguaje según el perfil seleccionado.</p>
                     </div>
                     <div class="d-flex gap-2 flex-wrap align-items-center">
                         <select id="lenguaje-select" class="form-select form-select-sm" style="min-width: 180px;" onchange="cambiarLenguaje()">
@@ -166,15 +44,15 @@
                             <option value="javascript">JavaScript</option>
                             <option value="python">Python</option>
                         </select>
-                        <button class="btn btn-outline-light btn-sm" onclick="analizar()"><i class="fas fa-play"></i> Analizar</button>
+                        <button class="btn btn-outline-light btn-sm" id="btn-analizar"><i class="fas fa-play"></i> Analizar</button>
                         <button class="btn btn-outline-secondary btn-sm" onclick="limpiar()"><i class="fas fa-eraser"></i> Limpiar</button>
                     </div>
                 </div>
 
                 <div id="editor" class="mb-3"></div>
                 <div class="d-flex flex-wrap gap-3 align-items-center">
-                    <span class="status-chip"><i class="fas fa-lightbulb"></i> Presiona <strong>Ctrl+Space</strong> para sugerencias</span>
-                    <span id="hint-status" class="hint-status"></span>
+                    <span class="status-chip"><i class="fas fa-lightbulb"></i> <strong>Ctrl+Space</strong> sugerencias · <strong>Ctrl+Enter</strong> analizar</span>
+                    <span id="hint-status" class="hint-status"><span id="spinner" class="spinner" style="display:none"></span></span>
                 </div>
 
                 <div class="mt-4 d-flex gap-2 flex-wrap">
@@ -183,27 +61,40 @@
                 </div>
             </div>
 
+            <!-- Resultados en Tabs -->
             <div class="result-card p-4">
                 <ul class="nav nav-pills mb-3" role="tablist">
                     <li class="nav-item" role="presentation"><button class="nav-link active" id="tokens-tab" data-bs-toggle="pill" data-bs-target="#tokens" type="button">Tokens</button></li>
                     <li class="nav-item" role="presentation"><button class="nav-link" id="ast-tab" data-bs-toggle="pill" data-bs-target="#ast" type="button">AST</button></li>
                     <li class="nav-item" role="presentation"><button class="nav-link" id="semantica-tab" data-bs-toggle="pill" data-bs-target="#semantica" type="button">Semántica</button></li>
+                    <li class="nav-item" role="presentation"><button class="nav-link" id="stats-tab" data-bs-toggle="pill" data-bs-target="#stats" type="button">Estadísticas</button></li>
                 </ul>
                 <div class="tab-content">
                     <div class="tab-pane fade show active" id="tokens">
+                        <button class="btn-copy" onclick="copiarTab('tokens-content')" title="Copiar"><i class="fas fa-copy"></i></button>
                         <pre id="tokens-content" class="code-panel"></pre>
                     </div>
                     <div class="tab-pane fade" id="ast">
+                        <button class="btn-copy" onclick="copiarTab('ast-content')" title="Copiar"><i class="fas fa-copy"></i></button>
                         <div id="ast-tree" class="code-panel"></div>
+                        <div id="ast-content" style="display:none"></div>
                     </div>
                     <div class="tab-pane fade" id="semantica">
+                        <button class="btn-copy" onclick="copiarTab('semantica-content')" title="Copiar"><i class="fas fa-copy"></i></button>
                         <pre id="semantica-content" class="code-panel"></pre>
+                    </div>
+                    <div class="tab-pane fade" id="stats">
+                        <button class="btn-copy" onclick="copiarTab('stats-content')" title="Copiar"><i class="fas fa-copy"></i></button>
+                        <pre id="stats-content" class="code-panel"></pre>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Sidebar -->
         <div class="col-xl-4">
+
+            <!-- Perfil del lenguaje activo -->
             <div class="language-card" id="language-card">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <div>
@@ -211,12 +102,11 @@
                         <h5 id="language-name" class="mt-3 mb-1">C</h5>
                         <p id="language-tagline" class="code-meta mb-0">Punteros y memoria manual.</p>
                     </div>
-                    <span class="fs-2" id="language-icon"><i class="fas fa-code"></i></span>
+                    <span class="fs-2" id="language-icon"><i class="fas fa-memory"></i></span>
                 </div>
-
                 <p id="language-description" class="mb-3">C es un lenguaje de sistemas con punteros y declaración explícita de tipos.</p>
                 <div class="mb-3">
-                    <strong>Prácticas clave</strong>
+                    <strong>Keywords</strong>
                     <ul class="code-meta mb-0" id="language-keywords"></ul>
                 </div>
                 <div class="mb-3">
@@ -224,31 +114,100 @@
                     <p class="code-meta mb-0" id="language-theme">Memoria, punteros y compilación directa.</p>
                 </div>
                 <div class="mb-3">
-                    <strong>Sugerencia de lenguaje</strong>
-                    <p class="code-meta mb-0" id="language-detect">El sistema detecta C como el idioma principal del editor.</p>
+                    <strong>Detección</strong>
+                    <p class="code-meta mb-0" id="language-detect">El sistema detecta C como el idioma principal.</p>
                 </div>
             </div>
 
+            <!-- Panel de Teoría de la Información -->
+            <div class="language-card" id="entropy-card">
+                <h5 class="mb-3"><i class="fas fa-chart-bar"></i> Teoría de la Información</h5>
+                <p class="code-meta mb-2">Entropía de Shannon aplicada a tokens</p>
+                <div class="entropy-card mb-2">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="code-meta">H = -Σ p(x) · log₂ p(x)</small>
+                        <small class="code-meta">Normalizada</small>
+                    </div>
+                    <div style="background: #1f2937; border-radius: 4px;">
+                        <div id="entropy-bar-fill" class="entropy-bar" style="width: 0%;"></div>
+                    </div>
+                </div>
+                <div class="row g-2 text-center">
+                    <div class="col-4">
+                        <div class="entropy-card">
+                            <small class="code-meta">Entropía</small>
+                            <h6 class="mb-0" id="entropy-value">--</h6>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="entropy-card">
+                            <small class="code-meta">Máxima</small>
+                            <h6 class="mb-0" id="entropy-max">--</h6>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="entropy-card">
+                            <small class="code-meta">Tipos</small>
+                            <h6 class="mb-0" id="entropy-unique">--</h6>
+                        </div>
+                    </div>
+                </div>
+                <p class="code-meta mt-2 mb-0" style="font-size: 0.82rem;">
+                    Entropía alta = más diversidad léxica. Entropía baja = código repetitivo.
+                </p>
+            </div>
+
+            <!-- Comparador sintáctico -->
             <div class="language-card" id="comparison-card">
                 <h5 class="mb-3">Comparador sintáctico</h5>
                 <div class="table-responsive">
                     <table class="table table-borderless table-sm syntax-table text-white">
                         <thead>
-                            <tr><th>Operación</th><th>C/C++</th><th>Java</th><th>JS</th><th>Python</th></tr>
+                            <tr><th>Operación</th><th data-lang="c">C</th><th data-lang="cpp">C++</th><th data-lang="java">Java</th><th data-lang="javascript">JS</th><th data-lang="python">Python</th></tr>
                         </thead>
                         <tbody>
-                            <tr><th>Variable</th><td><code>int x = 5;</code></td><td><code>int x = 5;</code></td><td><code>let x = 5;</code></td><td><code>x = 5</code></td></tr>
-                            <tr><th>Función</th><td><code>int suma(int a, int b) { return a + b; }</code></td><td><code>int suma(int a, int b) { return a + b; }</code></td><td><code>const suma = (a, b) => a + b;</code></td><td><code>def suma(a, b):\n    return a + b</code></td></tr>
-                            <tr><th>If</th><td><code>if (x > 0) {}</code></td><td><code>if (x > 0) {}</code></td><td><code>if (x > 0) {}</code></td><td><code>if x > 0:\n    pass</code></td></tr>
-                            <tr><th>Loop</th><td><code>for (int i = 0; i < 5; i++) {}</code></td><td><code>for (int i = 0; i < 5; i++) {}</code></td><td><code>for (let i = 0; i < 5; i++) {}</code></td><td><code>for i in range(5):\n    pass</code></td></tr>
+                            <tr>
+                                <th>Variable</th>
+                                <td data-lang="c"><code>int x = 5;</code></td>
+                                <td data-lang="cpp"><code>int x = 5;</code></td>
+                                <td data-lang="java"><code>int x = 5;</code></td>
+                                <td data-lang="javascript"><code>let x = 5;</code></td>
+                                <td data-lang="python"><code>x = 5</code></td>
+                            </tr>
+                            <tr>
+                                <th>Función</th>
+                                <td data-lang="c"><code>int sum(int a,int b){return a+b;}</code></td>
+                                <td data-lang="cpp"><code>int sum(int a,int b){return a+b;}</code></td>
+                                <td data-lang="java"><code>int sum(int a,int b){return a+b;}</code></td>
+                                <td data-lang="javascript"><code>const sum=(a,b)=>a+b</code></td>
+                                <td data-lang="python"><code>def sum(a,b): return a+b</code></td>
+                            </tr>
+                            <tr>
+                                <th>If</th>
+                                <td data-lang="c"><code>if(x>0){}</code></td>
+                                <td data-lang="cpp"><code>if(x>0){}</code></td>
+                                <td data-lang="java"><code>if(x>0){}</code></td>
+                                <td data-lang="javascript"><code>if(x>0){}</code></td>
+                                <td data-lang="python"><code>if x>0: pass</code></td>
+                            </tr>
+                            <tr>
+                                <th>Loop</th>
+                                <td data-lang="c"><code>for(int i=0;i&lt;5;i++){}</code></td>
+                                <td data-lang="cpp"><code>for(int i=0;i&lt;5;i++){}</code></td>
+                                <td data-lang="java"><code>for(int i=0;i&lt;5;i++){}</code></td>
+                                <td data-lang="javascript"><code>for(let i=0;i&lt;5;i++){}</code></td>
+                                <td data-lang="python"><code>for i in range(5): pass</code></td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
         </div>
+
     </div>
 </div>
 
+<!-- Dependencias externas -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/codemirror.min.js"></script>
@@ -258,342 +217,12 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/show-hint.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.2/addon/hint/anyword-hint.min.js"></script>
 
-<script>
-    const languageProfiles = {
-        c: {
-            name: "C",
-            icon: "fas fa-memory",
-            tagline: "Punteros y memoria manual.",
-            description: "C es un lenguaje de sistemas con punteros, estructuras y tipos estáticos.",
-            theme: "theme-c",
-            examples: [
-                "int *p; int x = 10; p = &x;",
-                "struct Punto { int x; int y; };",
-                "int suma(int a, int b) { return a + b; }",
-                "for (int i = 0; i < 5; i++) { printf(\"%d\\n\", i); }"
-            ],
-            keywords: ["int", "char", "float", "struct", "typedef", "return", "*", "&"],
-            hintWords: ["int", "char", "float", "double", "struct", "typedef", "for", "while", "return", "printf", "scanf", "malloc", "free"]
-        },
-        cpp: {
-            name: "C++",
-            icon: "fas fa-atom",
-            tagline: "Clases, templates y STL.",
-            description: "C++ mezcla abstracción de objetos con acceso de bajo nivel y templates.",
-            theme: "theme-cpp",
-            examples: [
-                "#include <iostream>\nusing namespace std;\n\nint main() { cout << \"Hola C++\" << endl; return 0; }",
-                "class Persona { public: string nombre; };",
-                "vector<int> datos = {1, 2, 3};",
-                "auto suma = [](int a, int b) { return a + b; };"
-            ],
-            keywords: ["class", "namespace", "std", "auto", "new", "delete", "cout", "cin"],
-            hintWords: ["class", "namespace", "using", "std", "cout", "cin", "vector", "string", "auto", "new", "delete"]
-        },
-        java: {
-            name: "Java",
-            icon: "fab fa-java",
-            tagline: "Clases, métodos y JVM.",
-            description: "Java exige clases y métodos públicos, con un estilo orientado a objetos y gestión automática de memoria.",
-            theme: "theme-java",
-            examples: [
-                "public class Prueba {\n    public static void main(String[] args) {\n        System.out.println(\"Hola Java\");\n    }\n}\n",
-                "class Persona { private String nombre; }",
-                "public int sumar(int a, int b) { return a + b; }",
-                "if (x > 0) { System.out.println(x); } else { System.out.println(-x); }"
-            ],
-            keywords: ["class", "public", "static", "void", "String", "new", "extends", "implements"],
-            hintWords: ["class", "public", "static", "void", "String", "new", "extends", "implements", "System.out.println", "if", "for", "while"]
-        },
-        javascript: {
-            name: "JavaScript",
-            icon: "fab fa-js",
-            tagline: "DOM, funciones y asincronía.",
-            description: "JavaScript es el lenguaje dinámico de la web, con let/const/var y funciones modernas.",
-            theme: "theme-javascript",
-            examples: [
-                "const saludo = (nombre) => { console.log('Hola ' + nombre); };",
-                "let x = 5; const y = x * 2;",
-                "if (x > 0) { document.body.innerHTML = 'OK'; }",
-                "for (let i = 0; i < 5; i++) { console.log(i); }"
-            ],
-            keywords: ["var", "let", "const", "function", "=>", "document", "window", "async", "await"],
-            hintWords: ["var", "let", "const", "function", "=>", "document", "window", "console.log", "if", "for", "while", "return"]
-        },
-        python: {
-            name: "Python",
-            icon: "fab fa-python",
-            tagline: "Indentación significativa.",
-            description: "Python usa indentación para definir bloques y prefiere una sintaxis limpia y legible.",
-            theme: "theme-python",
-            examples: [
-                "def saludar(nombre):\n    return f'Hola {nombre}'\n",
-                "class Persona:\n    def __init__(self, nombre):\n        self.nombre = nombre\n",
-                "for i in range(5):\n    print(i)\n",
-                "if x > 0:\n    print('positivo')\nelse:\n    print('negativo')\n"
-            ],
-            keywords: ["def", "class", "if", "elif", "else", "for", "in", "return", "lambda"],
-            hintWords: ["def", "class", "import", "for", "in", "if", "elif", "else", "return", "print", "self"]
-        }
-    };
-
-    const syntaxComparison = {
-        variable: {
-            c: "int x = 5;",
-            cpp: "int x = 5;",
-            java: "int x = 5;",
-            javascript: "let x = 5;",
-            python: "x = 5"
-        },
-        function: {
-            c: "int suma(int a, int b) { return a + b; }",
-            cpp: "int suma(int a, int b) { return a + b; }",
-            java: "int suma(int a, int b) { return a + b; }",
-            javascript: "const suma = (a, b) => a + b;",
-            python: "def suma(a, b):\n    return a + b"
-        }
-    };
-
-    function obtenerModoPorLenguaje(lenguaje) {
-        const modos = {
-            c: "text/x-csrc",
-            cpp: "text/x-csrc",
-            java: "text/x-java",
-            javascript: "javascript",
-            python: "python"
-        };
-        return modos[lenguaje] || "text/x-csrc";
-    }
-
-    let currentProfile = languageProfiles.c;
-
-    const editor = CodeMirror(document.getElementById("editor"), {
-        value: languageProfiles.c.examples[0],
-        mode: obtenerModoPorLenguaje("c"),
-        theme: "material-darker",
-        lineNumbers: true,
-        indentUnit: 4,
-        tabSize: 4,
-        autoCloseBrackets: true,
-        matchBrackets: true,
-        extraKeys: {
-            "Ctrl-Space": "autocomplete"
-        },
-        hintOptions: {
-            completeSingle: false
-        }
-    });
-
-    editor.on("keyup", (cm, event) => {
-        if (!cm.state.completionActive && /[\w.]/.test(event.key)) {
-            CodeMirror.commands.autocomplete(cm, null, {completeSingle: false});
-        }
-        actualizarDeteccion();
-    });
-
-    function actualizarPerfil(lenguaje) {
-        currentProfile = languageProfiles[lenguaje];
-        document.body.className = currentProfile.theme;
-        document.getElementById("language-name").textContent = currentProfile.name;
-        document.getElementById("language-tagline").textContent = currentProfile.tagline;
-        document.getElementById("language-description").textContent = currentProfile.description;
-        document.getElementById("language-theme").textContent = `Tema: ${currentProfile.name}`;
-        document.getElementById("language-icon").innerHTML = `<i class="${currentProfile.icon}"></i>`;
-        const keywordsNode = document.getElementById("language-keywords");
-        keywordsNode.innerHTML = currentProfile.keywords.map(word => `<li>${word}</li>`).join("");
-        document.getElementById("language-detect").textContent = detectarLenguaje() || `El sistema está configurado para ${currentProfile.name}.`;
-    }
-
-    function cambiarLenguaje() {
-        const lenguaje = document.getElementById("lenguaje-select").value;
-        const profile = languageProfiles[lenguaje];
-        if (!profile) return;
-
-        editor.setOption("mode", obtenerModoPorLenguaje(lenguaje));
-        editor.setValue(profile.examples[0]);
-        actualizarPerfil(lenguaje);
-    }
-
-    function cargarEjemploPorPerfil() {
-        editor.setValue(currentProfile.examples[0]);
-        editor.focus();
-    }
-
-    function cargarEjemploDeComparador() {
-        editor.setValue(syntaxComparison.function[document.getElementById("lenguaje-select").value]);
-        editor.focus();
-    }
-
-    function detectarLenguaje() {
-        const code = editor.getValue();
-        if (/\b(def |elif |import |print\()/m.test(code)) return "Detectado: Python probable.";
-        if (/\b(public static void main|System\.out\.println|class \w+)/m.test(code)) return "Detectado: Java probable.";
-        if (/\b(let |const |var |document\.|window\.|=>)/m.test(code)) return "Detectado: JavaScript probable.";
-        if (/\b#include |std::|cout|cin|using namespace std/m.test(code)) return "Detectado: C++ probable.";
-        if (/\bint |char |float |printf\(|scanf\(/m.test(code)) return "Detectado: C probable.";
-        return "Lenguaje no identificado automáticamente.";
-    }
-
-    function analizar() {
-        const codigo = editor.getValue().trim();
-        if (!codigo) {
-            alert("Por favor, ingresa código a analizar");
-            return;
-        }
-
-        document.getElementById("hint-status").textContent = "Analizando...";
-
-        fetch("http://localhost:5000/analizar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ codigo, lenguaje: document.getElementById("lenguaje-select").value })
-        })
-        .then(async res => {
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || `Error HTTP ${res.status}`);
-            return data;
-        })
-        .then(data => {
-            document.getElementById("tokens-content").textContent = JSON.stringify(data.tokens, null, 2);
-            document.getElementById("ast-tree").innerHTML = renderAST(data.ast);
-            document.getElementById("semantica-content").textContent = data.validacion.exito
-                ? "✔️ Validación semántica correcta"
-                : "❌ Errores semánticos detectados:\n" + data.validacion.errores.map(err => `Línea ${err.linea || "?"}: ${err.mensaje}`).join("\n");
-            document.getElementById("hint-status").textContent = "Análisis completado.";
-        })
-        .catch(err => {
-            document.getElementById("semantica-content").textContent = "Error de análisis: " + err.message;
-            document.getElementById("hint-status").textContent = "Error en la conexión.";
-            console.error(err);
-        });
-    }
-
-    function renderAST(ast) {
-        if (!ast || ast.length === 0) return '<p class="code-meta">AST vacío o código inválido.</p>';
-        return `<ul>${ast.map(nodo => renderNodo(nodo)).join("")}</ul>`;
-    }
-
-    function renderNodo(nodo) {
-        if (typeof nodo !== 'object' || nodo === null) {
-            return `<li>${String(nodo)}</li>`;
-        }
-        const tipo = nodo.tipo || 'nodo';
-        const props = Object.entries(nodo).filter(([key]) => key !== 'tipo');
-        return `<li><strong>${tipo}</strong>${props.length ? `: ${props.map(([key, value]) => `<div class="ps-3"><em>${key}</em> ${renderValor(value)}</div>`).join('')}` : ''}</li>`;
-    }
-
-    function renderValor(value) {
-        if (Array.isArray(value)) {
-            return `<ul>${value.map(item => renderNodo(item)).join('')}</ul>`;
-        }
-        if (typeof value === 'object' && value !== null) {
-            return `<ul>${renderNodo(value)}</ul>`;
-        }
-        return `<span>${String(value)}</span>`;
-    }
-
-    function limpiar() {
-        editor.setValue("");
-        document.getElementById("tokens-content").textContent = "";
-        document.getElementById("ast-tree").textContent = "";
-        document.getElementById("semantica-content").textContent = "";
-        document.getElementById("hint-status").textContent = "";
-    }
-
-    // --- Healthcheck y manejo de disponibilidad del servidor ---
-    const SERVER_URLS = [
-        "http://localhost:5000",
-        "http://127.0.0.1:5000",
-        "http://192.168.18.96:5000"
-    ];
-    let serverBase = SERVER_URLS[0];
-    let serverAvailable = false;
-
-    function setServerAvailability(avail) {
-        serverAvailable = avail;
-        const botones = document.querySelectorAll('button[onclick]');
-        botones.forEach(b => {
-            // permitir siempre los botones de ejemplos locales (contienen 'cargarEjemplo')
-            if (b.getAttribute('onclick') && b.getAttribute('onclick').includes('cargarEjemplo')) return;
-            b.disabled = !avail;
-            b.classList.toggle('disabled', !avail);
-        });
-        if (!avail) {
-            document.getElementById('hint-status').textContent = 'Error en la conexión. Backend no disponible.';
-        }
-    }
-
-    async function comprobarServidor() {
-        for (const base of SERVER_URLS) {
-            try {
-                const res = await fetch(base + '/info', { method: 'GET' });
-                if (res.ok) {
-                    serverBase = base;
-                    setServerAvailability(true);
-                    return true;
-                }
-            } catch (e) {
-                // seguir intentando con la siguiente URL
-            }
-        }
-        setServerAvailability(false);
-        return false;
-    }
-
-    // Modificar la función analizar para usar serverBase y mostrar errores más claros
-    const originalAnalizar = analizar;
-    async function analizar() {
-        if (!serverAvailable) {
-            document.getElementById('hint-status').textContent = 'No hay conexión con el backend. Intentando reconectar...';
-            const ok = await comprobarServidor();
-            if (!ok) return;
-        }
-
-        const codigo = editor.getValue().trim();
-        if (!codigo) {
-            alert('Por favor, ingresa código a analizar');
-            return;
-        }
-
-        document.getElementById('hint-status').textContent = 'Analizando...';
-
-        try {
-            const res = await fetch(serverBase + '/analizar', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ codigo, lenguaje: document.getElementById('lenguaje-select').value })
-            });
-            const data = await res.json();
-            if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
-
-            document.getElementById('tokens-content').textContent = JSON.stringify(data.tokens, null, 2);
-            document.getElementById('ast-tree').innerHTML = renderAST(data.ast);
-            document.getElementById('semantica-content').textContent = data.validacion && data.validacion.exito
-                ? '✔️ Validación semántica correcta'
-                : (data.validacion ? ('❌ Errores semánticos detectados:\n' + (data.validacion.errores || []).map(err => `Línea ${err.linea || '?'}: ${err.mensaje}`).join('\n')) : 'Sin información semántica');
-            document.getElementById('hint-status').textContent = 'Análisis completado.';
-            setServerAvailability(true);
-        } catch (err) {
-            console.error('Error en fetch analizar:', err);
-            document.getElementById('semantica-content').textContent = 'Error de análisis: ' + (err.message || err);
-            document.getElementById('hint-status').textContent = 'Error en la conexión.';
-            setServerAvailability(false);
-        }
-    }
-
-    // Reemplazar referencias donde se usa analizar en botones: actualizar atributo onclick dinámicamente
-    document.addEventListener('DOMContentLoaded', () => {
-        const analizarBtn = Array.from(document.querySelectorAll('button')).find(b => b.textContent && b.textContent.trim().startsWith('Analizar'));
-        if (analizarBtn) { analizarBtn.onclick = analizar; }
-    });
-
-    window.addEventListener('load', async () => {
-        actualizarPerfil('c');
-        cambiarLenguaje();
-        await comprobarServidor();
-    });
-</script>
+<!-- Módulos propios -->
+<script src="js/config.js"></script>
+<script src="js/profiles.js"></script>
+<script src="js/editor.js"></script>
+<script src="js/renderer.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
 </body>
 </html>

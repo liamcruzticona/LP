@@ -1,11 +1,22 @@
+"""
+HERENCIA: PythonLexer(AnalizadorLexicoBase), PythonParser(ParserBase)
+heredan directamente de las clases base abstractas, NO de CLikeBase,
+porque Python tiene sintaxis basada en indentación.
+
+ABSTRACCIÓN: Oculta la complejidad del análisis de indentación
+(INDENT/DEDENT) exponiendo solo analizar().
+"""
+
 import re
 
 from core.analizadores.base import AnalizadorLexicoBase, ParserBase, AnalizadorLenguaje
 from core.token import Token
 
+
 PALABRAS_RESERVADAS_PY = {
-    "def", "if", "elif", "else", "while", "for", "in", "return",
-    "True", "False", "None", "and", "or", "not", "pass"
+    "def", "class", "if", "elif", "else", "while", "for", "in", "return",
+    "True", "False", "None", "and", "or", "not", "pass",
+    "import", "from", "as",
 }
 
 TOKEN_REGEX_PY = [
@@ -22,6 +33,13 @@ TOKEN_REGEX_PY = [
 
 
 class PythonLexer(AnalizadorLexicoBase):
+    """
+    ABSTRACCIÓN: Oculta la lógica de indentación significativa.
+
+    ENCAPSULAMIENTO: _procesar_indentacion y _crear_token
+    son métodos privados.
+    """
+
     def __init__(self, codigo):
         super().__init__(codigo)
         self.tokens = []
@@ -29,7 +47,9 @@ class PythonLexer(AnalizadorLexicoBase):
 
     def analizar(self):
         line_inicio = True
-        for numero_linea, line in enumerate(self.codigo.splitlines(True), start=1):
+        for numero_linea, line in enumerate(
+            self.codigo.splitlines(True), start=1
+        ):
             if line_inicio:
                 self._procesar_indentacion(line, numero_linea)
                 line_inicio = False
@@ -62,7 +82,10 @@ class PythonLexer(AnalizadorLexicoBase):
                         pos = match.end(0)
                         break
                 if not match:
-                    raise Exception(f"Error léxico Python en línea {numero_linea}, columna {pos + 1}: símbolo no reconocido")
+                    raise Exception(
+                        f"Error léxico Python en línea {numero_linea}, "
+                        f"columna {pos + 1}: símbolo no reconocido"
+                    )
 
         while len(self.indent_stack) > 1:
             self.indent_stack.pop()
@@ -86,6 +109,12 @@ class PythonLexer(AnalizadorLexicoBase):
 
 
 class PythonParser(ParserBase):
+    """
+    POLIMORFISMO: sentencia(), funcion(), sentencia_if() se
+    comportan distinto que en CParser/JavaParser porque Python
+    usa indentación en vez de llaves {}.
+    """
+
     def __init__(self, tokens):
         super().__init__(tokens)
         self.pos = 0
@@ -96,15 +125,29 @@ class PythonParser(ParserBase):
     def avanzar(self):
         self.pos += 1
 
+    def peek(self, offset=1):
+        idx = self.pos + offset
+        return self.tokens[idx] if idx < len(self.tokens) else None
+
     def consumir(self, tipo_esperado, mensaje_custom=None):
         token = self.actual()
         if not token:
-            raise Exception(mensaje_custom or f"Se esperaba {tipo_esperado} pero llegó fin de archivo")
-        if token.tipo == tipo_esperado or (isinstance(tipo_esperado, list) and token.tipo in tipo_esperado):
+            raise Exception(
+                mensaje_custom
+                or f"Se esperaba {tipo_esperado} pero llegó fin de archivo"
+            )
+        if token.tipo == tipo_esperado or (
+            isinstance(tipo_esperado, list) and token.tipo in tipo_esperado
+        ):
             self.avanzar()
             return token
-        msg = mensaje_custom or f"Se esperaba {tipo_esperado} pero se encontró {token.tipo}"
-        raise Exception(f"Error sintáctico Python: {msg} en línea {token.linea}")
+        msg = mensaje_custom or (
+            f"Se esperaba {tipo_esperado} "
+            f"pero se encontró {token.tipo}"
+        )
+        raise Exception(
+            f"Error sintáctico Python: {msg} en línea {token.linea}"
+        )
 
     def analizar(self):
         ast = []
@@ -125,20 +168,82 @@ class PythonParser(ParserBase):
         if token.tipo == "RESERVADA":
             if token.valor == "def":
                 return self.funcion()
+            if token.valor == "class":
+                return self._clase()
             if token.valor == "if":
                 return self.sentencia_if()
+            if token.valor == "elif":
+                raise Exception(
+                    f"Error sintactico Python: 'elif' sin 'if' previo "
+                    f"en linea {token.linea}"
+                )
             if token.valor == "while":
                 return self.sentencia_while()
             if token.valor == "for":
                 return self.sentencia_for()
             if token.valor == "return":
                 return self.sentencia_return()
+            if token.valor == "import":
+                return self._sentencia_import()
+            if token.valor == "from":
+                return self._sentencia_from()
             if token.valor == "pass":
                 self.avanzar()
                 return {"tipo": "pass"}
         if token.tipo == "ID" and self.peek() and self.peek().valor == "=":
             return self.asignacion()
         return self.sentencia_expresion()
+
+    def _clase(self):
+        self.consumir("RESERVADA")
+        nombre = self.consumir("ID")
+        self.consumir("SIMBOLO", "se esperaba ':'")
+        self.consumir("INDENT", "se esperaba indentacion")
+        cuerpo = self.bloque()
+        self.consumir("DEDENT", "se esperaba fin de indentacion")
+        return {
+            "tipo": "clase",
+            "nombre": nombre.valor,
+            "linea": nombre.linea,
+            "cuerpo": cuerpo,
+        }
+
+    def _sentencia_import(self):
+        self.consumir("RESERVADA")
+        modulos = []
+        nombre = self.consumir("ID")
+        modulos.append(nombre.valor)
+        while self.actual() and self.actual().valor == ".":
+            self.consumir("SIMBOLO")
+            parte = self.consumir("ID")
+            modulos.append(parte.valor)
+        alias = None
+        if self.actual() and self.actual().tipo == "RESERVADA" and self.actual().valor == "as":
+            self.consumir("RESERVADA")
+            alias = self.consumir("ID").valor
+        return {"tipo": "import", "modulo": ".".join(modulos), "alias": alias}
+
+    def _sentencia_from(self):
+        self.consumir("RESERVADA")
+        partes = []
+        parte = self.consumir("ID")
+        partes.append(parte.valor)
+        while self.actual() and self.actual().valor == ".":
+            self.consumir("SIMBOLO")
+            parte = self.consumir("ID")
+            partes.append(parte.valor)
+        self.consumir("RESERVADA", "se esperaba 'import'")
+        nombre = self.consumir("ID")
+        alias = None
+        if self.actual() and self.actual().tipo == "RESERVADA" and self.actual().valor == "as":
+            self.consumir("RESERVADA")
+            alias = self.consumir("ID").valor
+        return {
+            "tipo": "from_import",
+            "modulo": ".".join(partes),
+            "nombre": nombre.valor,
+            "alias": alias,
+        }
 
     def funcion(self):
         self.consumir("RESERVADA")
@@ -163,7 +268,9 @@ class PythonParser(ParserBase):
         if self.actual() and self.actual().valor != ")":
             while True:
                 identificador = self.consumir("ID")
-                params.append({"nombre": identificador.valor, "linea": identificador.linea})
+                params.append(
+                    {"nombre": identificador.valor, "linea": identificador.linea}
+                )
                 if self.actual() and self.actual().valor == ",":
                     self.consumir("SIMBOLO")
                     continue
@@ -180,17 +287,40 @@ class PythonParser(ParserBase):
         self.consumir("RESERVADA")
         condicion = self.expresion()
         self.consumir("SIMBOLO", "se esperaba ':'")
-        self.consumir("INDENT", "se esperaba indentación")
+        self.consumir("INDENT", "se esperaba indentacion")
         bloque_if = self.bloque()
-        self.consumir("DEDENT", "se esperaba fin de indentación")
+        self.consumir("DEDENT", "se esperaba fin de indentacion")
+        elif_chain = []
         bloque_else = None
-        if self.actual() and self.actual().tipo == "RESERVADA" and self.actual().valor == "else":
+        while (
+            self.actual()
+            and self.actual().tipo == "RESERVADA"
+            and self.actual().valor == "elif"
+        ):
+            self.consumir("RESERVADA")
+            elif_cond = self.expresion()
+            self.consumir("SIMBOLO", "se esperaba ':'")
+            self.consumir("INDENT", "se esperaba indentacion")
+            elif_bloque = self.bloque()
+            self.consumir("DEDENT", "se esperaba fin de indentacion")
+            elif_chain.append({"condicion": elif_cond, "bloque": elif_bloque})
+        if (
+            self.actual()
+            and self.actual().tipo == "RESERVADA"
+            and self.actual().valor == "else"
+        ):
             self.consumir("RESERVADA")
             self.consumir("SIMBOLO", "se esperaba ':'")
-            self.consumir("INDENT", "se esperaba indentación")
+            self.consumir("INDENT", "se esperaba indentacion")
             bloque_else = self.bloque()
-            self.consumir("DEDENT", "se esperaba fin de indentación")
-        return {"tipo": "if", "condicion": condicion, "bloque_if": bloque_if, "bloque_else": bloque_else}
+            self.consumir("DEDENT", "se esperaba fin de indentacion")
+        return {
+            "tipo": "if",
+            "condicion": condicion,
+            "bloque_if": bloque_if,
+            "bloque_else": bloque_else,
+            "elif_chain": elif_chain,
+        }
 
     def sentencia_while(self):
         self.consumir("RESERVADA")
@@ -210,63 +340,103 @@ class PythonParser(ParserBase):
         self.consumir("INDENT", "se esperaba indentación")
         bloque = self.bloque()
         self.consumir("DEDENT", "se esperaba fin de indentación")
-        return {"tipo": "for", "variable": variable.valor, "coleccion": coleccion, "bloque": bloque}
+        return {
+            "tipo": "for",
+            "variable": variable.valor,
+            "coleccion": coleccion,
+            "bloque": bloque,
+        }
 
     def sentencia_return(self):
         self.consumir("RESERVADA")
-        valor = self.expresion() if self.actual() and self.actual().valor != ":" and self.actual().tipo != "DEDENT" else None
+        valor = (
+            self.expresion()
+            if self.actual()
+            and self.actual().valor != ":"
+            and self.actual().tipo != "DEDENT"
+            else None
+        )
         return {"tipo": "return", "valor": valor}
 
     def asignacion(self):
         identificador = self.consumir("ID")
         self.consumir("OPERADOR", "se esperaba '='")
         valor = self.expresion()
-        return {"tipo": "asignacion", "identificador": identificador.valor, "valor": valor, "linea": identificador.linea}
+        return {
+            "tipo": "asignacion",
+            "identificador": identificador.valor,
+            "valor": valor,
+            "linea": identificador.linea,
+        }
 
     def sentencia_expresion(self):
         expr = self.expresion()
         return {"tipo": "expresion", "expresion": expr}
 
     def expresion(self):
-        return self.expresion_binaria(0)
+        return self._expresion_binaria(0)
 
-    def expresion_binaria(self, min_precedencia):
-        izquierda = self.primaria()
-        while self.actual() and self.es_operador_binario(self.actual()):
+    def _expresion_binaria(self, min_precedencia):
+        izquierda = self._primaria()
+        while self.actual() and self._es_operador_binario(self.actual()):
             op = self.actual()
-            prec = self.precedencia(op)
+            prec = self._precedencia(op)
             if prec < min_precedencia:
                 break
             self.avanzar()
-            derecha = self.expresion_binaria(prec + 1)
-            izquierda = {"tipo": "binaria", "izquierda": izquierda, "operador": op.valor, "derecha": derecha, "linea": op.linea}
+            derecha = self._expresion_binaria(prec + 1)
+            izquierda = {
+                "tipo": "binaria",
+                "izquierda": izquierda,
+                "operador": op.valor,
+                "derecha": derecha,
+                "linea": op.linea,
+            }
         return izquierda
 
-    def primaria(self):
+    def _primaria(self):
         token = self.actual()
         if not token:
             raise Exception("Expresión inesperada: fin de archivo")
-        if token.tipo in ["NUMERO", "FLOAT", "STRING"]:
+        if token.tipo in ("NUMERO", "FLOAT", "STRING"):
             self.avanzar()
             return {"tipo": token.tipo.lower(), "valor": token.valor, "linea": token.linea}
         if token.tipo == "ID":
             nombre = token.valor
             linea = token.linea
             self.avanzar()
+            nodo = {"tipo": "id", "valor": nombre, "linea": linea}
+            while self.actual() and self.actual().valor == ".":
+                self.consumir("SIMBOLO")
+                miembro = self.consumir("ID")
+                nodo = {
+                    "tipo": "miembro",
+                    "objeto": nodo,
+                    "propiedad": miembro.valor,
+                    "linea": miembro.linea,
+                }
             if self.actual() and self.actual().valor == "(":
                 self.consumir("SIMBOLO")
-                args = self.argumentos()
+                args = self._argumentos()
                 self.consumir("SIMBOLO")
-                return {"tipo": "llamada_funcion", "nombre": nombre, "argumentos": args, "linea": linea}
-            return {"tipo": "id", "valor": nombre, "linea": linea}
+                return {
+                    "tipo": "llamada_funcion",
+                    "nombre": nombre,
+                    "argumentos": args,
+                    "linea": linea,
+                }
+            return nodo
         if token.valor == "(":
             self.consumir("SIMBOLO")
             expr = self.expresion()
             self.consumir("SIMBOLO")
             return expr
-        raise Exception(f"Error sintáctico Python: token inesperado '{token.valor}' en línea {token.linea}")
+        raise Exception(
+            f"Error sintáctico Python: token inesperado '{token.valor}' "
+            f"en línea {token.linea}"
+        )
 
-    def argumentos(self):
+    def _argumentos(self):
         args = []
         if self.actual() and self.actual().valor != ")":
             args.append(self.expresion())
@@ -275,23 +445,18 @@ class PythonParser(ParserBase):
                 args.append(self.expresion())
         return args
 
-    def peek(self, offset=1):
-        if self.pos + offset < len(self.tokens):
-            return self.tokens[self.pos + offset]
-        return None
+    def _es_operador_binario(self, token):
+        return token.tipo in ("OPERADOR", "OP_COMPUESTO")
 
-    def es_operador_binario(self, token):
-        return token.tipo in ["OPERADOR", "OP_COMPUESTO"]
-
-    def precedencia(self, token):
-        precedencias = {
-            "=": 1,
-            "==": 2, "!=": 2, "<": 2, ">": 2, "<=": 2, ">=": 2,
+    def _precedencia(self, token):
+        precs = {
+            "=": 1, "+=": 1, "-=": 1, "*=": 1, "/=": 1,
             "and": 1, "or": 1,
+            "==": 2, "!=": 2, "<": 2, ">": 2, "<=": 2, ">=": 2,
             "+": 3, "-": 3,
             "*": 4, "/": 4, "%": 4,
         }
-        return precedencias.get(token.valor, 0)
+        return precs.get(token.valor, 0)
 
 
 class PythonAnalizadorLenguaje(AnalizadorLenguaje):
@@ -299,7 +464,10 @@ class PythonAnalizadorLenguaje(AnalizadorLenguaje):
         metadata = {
             "identidad": "Python",
             "tema": "Indentación, funciones y dinámicas de alto nivel",
-            "keywords": ["def", "class", "if", "elif", "else", "for", "in", "return", "lambda"],
-            "descripcion": "Python usa indentación significativa y una sintaxis de alto nivel que prioriza legibilidad."
+            "keywords": sorted(PALABRAS_RESERVADAS_PY),
+            "descripcion": "Python usa indentación significativa y una "
+                           "sintaxis de alto nivel que prioriza legibilidad.",
         }
-        super().__init__("Python", PythonLexer, PythonParser, slug="python", metadata=metadata)
+        super().__init__(
+            "Python", PythonLexer, PythonParser, slug="python", metadata=metadata
+        )

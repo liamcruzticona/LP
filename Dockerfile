@@ -1,20 +1,16 @@
+# ── Backend: API Flask ──
+FROM python:3.10-slim
 
-# Imagen base
-FROM python:3.10
-
-# Carpeta de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar dependencias primero (optimiza build)
 COPY requirements.txt .
-
-# Instalar dependencias
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copiar todo el backend
-COPY . .
-# Exponer puerto
+COPY backend/ ./backend/
+
 EXPOSE 5000
 
-# Comando para ejecutar la app
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:5000/')" || exit 1
+
 CMD ["python", "backend/app.py"]

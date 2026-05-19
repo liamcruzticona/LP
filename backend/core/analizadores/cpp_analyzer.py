@@ -1,21 +1,29 @@
-import re
+"""
+HERENCIA: CppLexer(CLikeLexerBase), CppParser(CLikeParserBase)
+heredan la lógica común y agregan sintaxis específica de C++
+(clases, namespace, cout/cin).
+"""
 
-from core.analizadores.base import AnalizadorLexicoBase, ParserBase, AnalizadorLenguaje
+from core.analizadores.base import AnalizadorLenguaje
+from core.analizadores.base_clike import CLikeLexerBase, CLikeParserBase
 from core.token import Token
+
 
 PALABRAS_RESERVADAS_CPP = {
     "class", "namespace", "using", "std", "public", "private", "protected",
     "template", "typename", "int", "double", "float", "char", "bool",
     "void", "auto", "new", "delete", "return", "if", "else", "for", "while",
-    "cout", "cin", "std", "nullptr", "true", "false"
+    "cout", "cin", "nullptr", "true", "false",
 }
 
 TOKEN_REGEX_CPP = [
+    ("PREPROCESADOR", r'#.*'),
+    ("COMENTARIO_BLOQUE", r'/\*[\s\S]*?\*/'),
     ("COMENTARIO", r'//.*'),
     ("STRING", r'"([^"\\]|\\.)*"'),
     ("FLOAT", r'\d+\.\d+'),
     ("NUMERO", r'\d+'),
-    ("OP_COMPUESTO", r'(\+=|-=|\*=|/=|==|!=|<=|>=|\+\+|--)'),
+    ("OP_COMPUESTO", r'(<<|>>|\+=|-=|\*=|/=|==|!=|<=|>=|\+\+|--)'),
     ("ID", r'[a-zA-Z_][a-zA-Z0-9_]*'),
     ("OPERADOR", r'[+\-*/=%<>!&|]'),
     ("SIMBOLO", r'[;{}(),.\[\]<>:]'),
@@ -23,46 +31,19 @@ TOKEN_REGEX_CPP = [
 ]
 
 
-class CppLexer(AnalizadorLexicoBase):
-    def __init__(self, codigo):
-        super().__init__(codigo)
-        self.pos = 0
-        self.linea = 1
-        self.columna = 1
-        self.tokens = []
+class CppLexer(CLikeLexerBase):
+    PALABRAS_RESERVADAS = PALABRAS_RESERVADAS_CPP
+    TOKEN_REGEX = TOKEN_REGEX_CPP
 
-    def analizar(self):
-        while self.pos < len(self.codigo):
-            match = None
-            for tipo, regex in TOKEN_REGEX_CPP:
-                patron = re.compile(regex)
-                match = patron.match(self.codigo, self.pos)
-                if match:
-                    texto = match.group(0)
-                    if tipo == "ESPACIO":
-                        self._manejar_espacios(texto)
-                    else:
-                        self._crear_token(tipo, texto)
-                    self.pos = match.end(0)
-                    break
-            if not match:
-                raise Exception(
-                    f"Error léxico C++ en línea {self.linea}, columna {self.columna}: símbolo no reconocido"
-                )
-        return self.tokens
-
-    def _manejar_espacios(self, texto):
-        if "\n" in texto:
-            self.linea += texto.count("\n")
-            self.columna = 1
-        else:
-            self.columna += len(texto)
-
+    """
+    ENCAPSULAMIENTO: Sobrescribe _crear_token para detectar
+    punteros (*, &) como en C.
+    """
     def _crear_token(self, tipo, texto):
-        if tipo == "COMENTARIO":
+        if tipo in ("COMENTARIO", "COMENTARIO_BLOQUE", "PREPROCESADOR"):
             self.columna += len(texto)
             return
-        if tipo == "ID" and texto in PALABRAS_RESERVADAS_CPP:
+        if tipo == "ID" and texto in self.PALABRAS_RESERVADAS:
             tipo = "RESERVADA"
         if tipo == "OPERADOR" and texto in ["*", "&"]:
             tipo = "PUNTERO"
@@ -71,35 +52,11 @@ class CppLexer(AnalizadorLexicoBase):
         self.columna += len(texto)
 
 
-class CppParser(ParserBase):
-    def __init__(self, tokens):
-        super().__init__(tokens)
-        self.pos = 0
-
-    def actual(self):
-        return self.tokens[self.pos] if self.pos < len(self.tokens) else None
-
-    def avanzar(self):
-        self.pos += 1
-
-    def consumir(self, tipo_esperado, mensaje_custom=None):
-        token = self.actual()
-        if not token:
-            raise Exception(mensaje_custom or f"Se esperaba {tipo_esperado} pero llegó fin de archivo")
-        if token.tipo == tipo_esperado or (isinstance(tipo_esperado, list) and token.tipo in tipo_esperado):
-            self.avanzar()
-            return token
-        msg = mensaje_custom or f"Se esperaba {tipo_esperado} pero se encontró {token.tipo}"
-        raise Exception(f"Error sintáctico C++: {msg} en línea {token.linea}")
-
-    def analizar(self):
-        ast = []
-        try:
-            while self.actual() is not None:
-                ast.append(self.sentencia())
-        except Exception as e:
-            return {"tipo": "error", "mensaje": str(e)}
-        return ast
+class CppParser(CLikeParserBase):
+    """
+    POLIMORFISMO: sentencia() maneja class, using namespace,
+    además de lo que soporta C.
+    """
 
     def sentencia(self):
         token = self.actual()
@@ -107,10 +64,11 @@ class CppParser(ParserBase):
             return None
         if token.tipo == "RESERVADA":
             if token.valor == "class":
-                return self.clase()
+                return self._clase()
             if token.valor == "using":
-                return self.declaracion_using()
-            if token.valor in ["int", "double", "float", "char", "bool", "auto"]:
+                return self._declaracion_using()
+            if token.valor in {"int", "double", "float", "char",
+                               "bool", "auto", "void"}:
                 return self.declaracion_o_funcion()
             if token.valor == "if":
                 return self.sentencia_if()
@@ -120,186 +78,56 @@ class CppParser(ParserBase):
                 return self.sentencia_for()
             if token.valor == "return":
                 return self.sentencia_return()
-        return self.sentencia_expresion()
+            if token.valor in ("cout", "cin", "endl", "true", "false", "nullptr", "std"):
+                return self.sentencia_expresion()
+            raise Exception(f"Sentencia desconocida: {token.valor}")
+        if token.tipo in ("ID", "NUMERO", "FLOAT", "STRING") or token.valor == "(":
+            return self.sentencia_expresion()
+        raise Exception(
+            f"Error sintactico C++: token inesperado '{token.valor}' "
+            f"en linea {token.linea}"
+        )
 
-    def clase(self):
+    def _clase(self):
         self.consumir("RESERVADA")
         nombre = self.consumir("ID")
         self.consumir("SIMBOLO", "se esperaba '{'")
         miembros = []
         while self.actual() and self.actual().valor != "}":
-            miembros.append(self.miembro())
+            miembros.append(self._miembro())
         self.consumir("SIMBOLO", "se esperaba '}'")
-        self._opt_terminador()
-        return {"tipo": "clase", "nombre": nombre.valor, "miembros": miembros}
-
-    def _opt_terminador(self):
         if self.actual() and self.actual().valor == ";":
             self.consumir("SIMBOLO")
+        return {"tipo": "clase", "nombre": nombre.valor, "miembros": miembros}
 
-    def declaracion_using(self):
-        self.consumir("RESERVADA")
-        self.consumir("RESERVADA")
-        self.consumir("SIMBOLO", "se esperaba ';'")
-        return {"tipo": "using_namespace"}
-
-    def declaracion_o_funcion(self):
-        tipo = self.consumir("RESERVADA")
-        if self.actual() and self.actual().tipo == "PUNTERO":
-            puntero = self.consumir("PUNTERO")
-        nombre = self.consumir("ID")
-        if self.actual() and self.actual().valor == "(":
-            self.consumir("SIMBOLO")
-            parametros = self.parametros()
-            self.consumir("SIMBOLO", "se esperaba ')'")
-            self.consumir("SIMBOLO", "se esperaba '{'")
-            cuerpo = self.bloque()
-            self.consumir("SIMBOLO", "se esperaba '}'")
-            self._opt_terminador()
-            return {"tipo": "funcion", "retorno": tipo.valor, "nombre": nombre.valor, "parametros": parametros, "cuerpo": cuerpo}
-        valor = None
-        if self.actual() and self.actual().valor == "=":
-            self.consumir("OPERADOR")
-            valor = self.expresion()
-        self.consumir("SIMBOLO", "se esperaba ';'")
-        return {"tipo": "declaracion", "tipo_dato": tipo.valor, "identificador": nombre.valor, "valor": valor}
-
-    def parametros(self):
-        params = []
-        while self.actual() and self.actual().valor != ")":
-            tipo = self.consumir("RESERVADA")
-            nombre = self.consumir("ID")
-            params.append({"tipo": tipo.valor, "nombre": nombre.valor})
-            if self.actual() and self.actual().valor == ",":
-                self.consumir("SIMBOLO")
-                continue
-            break
-        return params
-
-    def bloque(self):
-        sentencias = []
-        while self.actual() and self.actual().valor != "}":
-            sentencias.append(self.sentencia())
-        return sentencias
-
-    def miembro(self):
-        if self.actual() and self.actual().valor in ["public", "private", "protected"]:
+    def _miembro(self):
+        if self.actual() and self.actual().valor in ("public", "private", "protected"):
             self.consumir("RESERVADA")
+            self.consumir("SIMBOLO", "se esperaba ':'")
+            return {"tipo": "etiqueta_acceso", "acceso": self.tokens[-2].valor}
         if self.actual() and self.actual().valor == "static":
             self.consumir("RESERVADA")
         return self.declaracion_o_funcion()
 
-    def sentencia_if(self):
+    def _declaracion_using(self):
         self.consumir("RESERVADA")
-        self.consumir("SIMBOLO")
-        condicion = self.expresion()
-        self.consumir("SIMBOLO")
-        self.consumir("SIMBOLO")
-        bloque = self.bloque()
-        self.consumir("SIMBOLO")
-        return {"tipo": "if", "condicion": condicion, "bloque": bloque}
-
-    def sentencia_while(self):
         self.consumir("RESERVADA")
-        self.consumir("SIMBOLO")
-        condicion = self.expresion()
-        self.consumir("SIMBOLO")
-        self.consumir("SIMBOLO")
-        bloque = self.bloque()
-        self.consumir("SIMBOLO")
-        return {"tipo": "while", "condicion": condicion, "bloque": bloque}
+        if self.actual() and self.actual().tipo in ("ID", "RESERVADA"):
+            self.consumir(self.actual().tipo)
+        self.consumir("SIMBOLO", "se esperaba ';'")
+        return {"tipo": "using_namespace"}
 
-    def sentencia_for(self):
-        self.consumir("RESERVADA")
-        self.consumir("SIMBOLO")
-        init = self.sentencia_expresion() if self.actual() and self.actual().valor != ";" else None
-        self.consumir("SIMBOLO")
-        condicion = self.expresion() if self.actual() and self.actual().valor != ";" else None
-        self.consumir("SIMBOLO")
-        incremento = self.expresion() if self.actual() and self.actual().valor != ")" else None
-        self.consumir("SIMBOLO")
-        self.consumir("SIMBOLO")
-        bloque = self.bloque()
-        self.consumir("SIMBOLO")
-        return {"tipo": "for", "inicializacion": init, "condicion": condicion, "incremento": incremento, "bloque": bloque}
+    def _precedencia(self, token):
+        precs = super()._precedencia(token)
+        custom = {"<<": 3, ">>": 3}
+        return custom.get(token.valor, precs)
 
-    def sentencia_return(self):
-        self.consumir("RESERVADA")
-        valor = self.expresion() if self.actual() and self.actual().valor != ";" else None
-        self.consumir("SIMBOLO")
-        return {"tipo": "return", "valor": valor}
-
-    def sentencia_expresion(self):
-        expr = self.expresion()
-        if self.actual() and self.actual().valor == ";":
-            self.consumir("SIMBOLO")
-        return {"tipo": "expresion", "expresion": expr}
-
-    def expresion(self):
-        return self.expresion_binaria(0)
-
-    def expresion_binaria(self, min_precedencia):
-        izquierda = self.primaria()
-        while self.actual() and self.es_operador_binario(self.actual()):
-            op = self.actual()
-            prec = self.precedencia(op)
-            if prec < min_precedencia:
-                break
-            self.avanzar()
-            derecha = self.expresion_binaria(prec + 1)
-            izquierda = {"tipo": "binaria", "izquierda": izquierda, "operador": op.valor, "derecha": derecha}
-        return izquierda
-
-    def primaria(self):
+    def _primaria(self):
         token = self.actual()
-        if not token:
-            raise Exception("Expresión inesperada: fin de archivo")
-        if token.tipo == "NUMERO":
+        if token and token.tipo == "RESERVADA" and token.valor in ("endl", "true", "false", "nullptr", "cout", "cin"):
             self.avanzar()
-            return {"tipo": "numero", "valor": token.valor}
-        if token.tipo == "FLOAT":
-            self.avanzar()
-            return {"tipo": "float", "valor": token.valor}
-        if token.tipo == "STRING":
-            self.avanzar()
-            return {"tipo": "string", "valor": token.valor}
-        if token.tipo == "ID":
-            nombre = token.valor
-            self.avanzar()
-            if self.actual() and self.actual().valor == "(":
-                self.consumir("SIMBOLO")
-                args = self.argumentos()
-                self.consumir("SIMBOLO")
-                return {"tipo": "llamada_funcion", "nombre": nombre, "argumentos": args}
-            return {"tipo": "id", "valor": nombre}
-        if token.valor == "(":
-            self.consumir("SIMBOLO")
-            expr = self.expresion()
-            self.consumir("SIMBOLO")
-            return expr
-        raise Exception(f"Token inesperado '{token.valor}' en línea {token.linea}")
-
-    def argumentos(self):
-        args = []
-        if self.actual() and self.actual().valor != ")":
-            args.append(self.expresion())
-            while self.actual() and self.actual().valor == ",":
-                self.consumir("SIMBOLO")
-                args.append(self.expresion())
-        return args
-
-    def es_operador_binario(self, token):
-        return token.tipo in ["OPERADOR", "OP_COMPUESTO", "PUNTERO"]
-
-    def precedencia(self, token):
-        precedencias = {
-            "=": 1,
-            "+=": 1, "-=": 1, "*=": 1, "/=": 1,
-            "==": 2, "!=": 2, "<": 2, ">": 2, "<=": 2, ">=": 2,
-            "+": 3, "-": 3,
-            "*": 4, "/": 4, "%": 4,
-        }
-        return precedencias.get(token.valor, 0)
+            return {"tipo": "id", "valor": token.valor, "linea": token.linea}
+        return super()._primaria()
 
 
 class CppAnalizadorLenguaje(AnalizadorLenguaje):
@@ -307,7 +135,8 @@ class CppAnalizadorLenguaje(AnalizadorLenguaje):
         metadata = {
             "identidad": "C++",
             "tema": "Clases, templates y memoria estática",
-            "keywords": ["class", "namespace", "std", "cout", "auto", "new", "delete"],
-            "descripcion": "C++ mezcla programación de bajo nivel con abstracciones de clase y STL."
+            "keywords": sorted(PALABRAS_RESERVADAS_CPP),
+            "descripcion": "C++ mezcla programación de bajo nivel "
+                           "con abstracciones de clase y STL.",
         }
         super().__init__("C++", CppLexer, CppParser, slug="cpp", metadata=metadata)

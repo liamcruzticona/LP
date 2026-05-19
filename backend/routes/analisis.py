@@ -1,22 +1,25 @@
+"""
+RUTAS: Capa de presentación HTTP.
+ABSTRACCIÓN: Las rutas solo manejan request/response y delegan
+toda la lógica al servicio (services/analisis_service.py).
+"""
+
 from flask import Blueprint, request, jsonify
-from core.analizador_factory import get_analizador, idiomas_disponibles
-from core.semantica import ValidadorSemantico
+
+from services.analisis_service import ServicioAnalisis
+from config import VERSION, NOMBRE
 
 bp = Blueprint('analisis', __name__)
 
+
 @bp.route('/analizar', methods=['POST'])
 def analizar():
-    """
-    Endpoint principal para análisis léxico, sintáctico y entropía
-    Manejo robusto de errores con sugerencias útiles
-    """
     try:
         data = request.get_json()
-
         if not data:
             return jsonify({
-                "error": "No se proporcionó JSON",
-                "sugerencia": "Envía un JSON con los campos 'codigo' y 'lenguaje'"
+                "error": "No se proporciono JSON",
+                "sugerencia": "Envia un JSON con 'codigo' y 'lenguaje'"
             }), 400
 
         codigo = data.get("codigo", "").strip()
@@ -24,89 +27,63 @@ def analizar():
 
         if not codigo:
             return jsonify({
-                "error": "El campo 'codigo' está vacío",
-                "sugerencia": "Proporciona código válido a analizar"
+                "error": "El campo 'codigo' esta vacio",
+                "sugerencia": "Proporciona codigo valido a analizar"
             }), 400
 
-        try:
-            analizador = get_analizador(lenguaje)
-        except ValueError as e:
-            return jsonify({
-                "error": str(e),
-                "fase": "Selección de Lenguaje",
-                "sugerencia": "Elige un lenguaje soportado o agrega soporte en el backend"
-            }), 400
+        resultado = ServicioAnalisis.analizar_codigo(codigo, lenguaje)
+        return jsonify(resultado), 200
 
-        try:
-            resultado = analizador.analizar(codigo)
-        except Exception as e:
-            return jsonify({
-                "error": f"Error de análisis: {str(e)}",
-                "fase": "Análisis Léxico/Sintáctico",
-                "sugerencia": "Revisa la estructura del código y la sintaxis del lenguaje seleccionado"
-            }), 400
-
-        if isinstance(resultado, dict) and resultado.get("tipo") == "error":
-            return jsonify({
-                "error": resultado.get("mensaje"),
-                "fase": "Análisis Sintáctico",
-                "sugerencia": "Corrige la gramática y revisa los tokens generados"
-            }), 400
-
-        if not resultado.get("tokens"):
-            return jsonify({
-                "error": "No se generaron tokens",
-                "fase": "Análisis Léxico",
-                "sugerencia": "El código parece estar vacío o contiene solo comentarios"
-            }), 400
-
-        validacion = ValidadorSemantico(resultado.get("ast")).validar()
-
+    except ValueError as e:
         return jsonify({
-            "lenguaje": resultado.get("lenguaje"),
-            "slug": resultado.get("slug"),
-            "metadata": resultado.get("metadata", {}),
-            "tokens": [t.to_dict() for t in resultado.get("tokens")],
-            "ast": resultado.get("ast"),
-            "validacion": validacion,
-            "exito": True
-        }), 200
+            "error": str(e),
+            "fase": "Seleccion de Lenguaje",
+            "sugerencia": "Elige un lenguaje soportado"
+        }), 400
+
+    except SyntaxError as e:
+        return jsonify({
+            "error": str(e),
+            "fase": "Analisis Sintactico",
+            "sugerencia": "Corrige la gramatica y revisa los tokens"
+        }), 400
+
+    except RuntimeError as e:
+        return jsonify({
+            "error": str(e),
+            "fase": "Analisis Lexico",
+            "sugerencia": "El codigo parece vacio o solo tiene comentarios"
+        }), 400
 
     except Exception as e:
         return jsonify({
-            "error": f"Error inesperado: {str(e)}",
-            "sugerencia": "Contacta al administrador si el error persiste"
-        }), 500
+            "error": f"Error de analisis: {str(e)}",
+            "fase": "Analisis Lexico/Sintactico",
+            "sugerencia": "Revisa la estructura del codigo"
+        }), 400
 
 
 @bp.route('/idiomas', methods=['GET'])
 def idiomas():
-    """Endpoint para listar los lenguajes disponibles."""
-    analizadores = {
-        clave: {
-            "nombre": analizador.nombre,
-            "slug": analizador.slug,
-            "metadata": analizador.metadata,
-        }
-        for clave, analizador in [(k, get_analizador(k)) for k in idiomas_disponibles().keys()]
-    }
-    return jsonify({
-        "disponibles": analizadores
-    }), 200
+    return jsonify(ServicioAnalisis.obtener_idiomas()), 200
 
 
 @bp.route('/info', methods=['GET'])
 def info():
-    """Endpoint de información del analizador"""
     return jsonify({
-        "nombre": "Analizador Léxico y Sintáctico Multilenguaje",
-        "version": "3.0",
-        "descripcion": "Plataforma modular de análisis de código para múltiples lenguajes.",
+        "nombre": f"{NOMBRE} v{VERSION}",
+        "version": VERSION,
+        "descripcion": (
+            "Plataforma modular con Arquitectura en Capas + POO "
+            "(abstraccion, herencia, polimorfismo, encapsulamiento). "
+            "Soporta C, C++, Java, JavaScript, Python."
+        ),
         "caracteristicas": [
-            "Análisis léxico multilenguaje",
-            "Análisis sintáctico avanzado",
-            "Validación semántica básica",
-            "Estructura modular y escalable",
-            "Soporte para C y JavaScript con base para más lenguajes"
-        ]
+            "Analisis lexico multilenguaje con tokens personalizados",
+            "Analisis sintactico con parser propio por lenguaje",
+            "Validacion semantica especifica por lenguaje",
+            "Entropia de Shannon para medicion de complejidad",
+            "Arquitectura escalable (Factory Pattern + Capas)",
+            "4 pilares de POO implementados en todo el sistema",
+        ],
     }), 200
