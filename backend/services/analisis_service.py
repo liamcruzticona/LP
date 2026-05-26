@@ -8,10 +8,7 @@ from core.entropia import CalculadorEntropia
 
 
 class ServicioAnalisis:
-    """
-    ENCAPSULAMIENTO: Toda la lógica de análisis se centraliza aquí.
-    Las rutas solo se encargan de HTTP request/response.
-    """
+    
 
     @staticmethod
     def analizar_codigo(codigo: str, lenguaje: str) -> dict:

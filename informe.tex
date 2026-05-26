@@ -73,8 +73,6 @@ Ing. Jose Luis Juarez Ruelas\\[0.8cm]
 \end{center}
 \end{titlepage}
 
-\newpage
-
 % ============================================================
 % LINKS DEL PROYECTO
 % ============================================================
@@ -97,27 +95,23 @@ Ing. Jose Luis Juarez Ruelas\\[0.8cm]
 \url{https://www.overleaf.com/7138759953vjdydpcyjtgy#82e0b4}
 \end{center}
 
-\newpage
-
 % ============================================================
 % ÍNDICE
 % ============================================================
+\newpage
 \tableofcontents
 \newpage
 \listoffigures
 \newpage
-
 % ============================================================
 % RESUMEN
 % ============================================================
 \section*{RESUMEN}
 \addcontentsline{toc}{section}{RESUMEN}
 
-El presente proyecto consiste en el desarrollo de un analizador léxico y sintáctico multilenguaje con validación semántica y cálculo de entropía de Shannon. La herramienta soporta cinco lenguajes de programación (C, C++, Java, JavaScript y Python) cada uno con su propio lexer, parser, validador semántico y AST diferenciado. La arquitectura del sistema se basa en los cuatro pilares de la Programación Orientada a Objetos (abstracción, herencia, polimorfismo y encapsulamiento) implementados mediante un patrón Factory que selecciona dinámicamente el analizador adecuado según el lenguaje. El backend está construido con Flask (Python) organizado en tres capas (routes → services → core), mientras que el frontend ofrece un editor inteligente con resaltado sintáctico, autocompletado y visualización interactiva de tokens, AST, validación semántica y estadísticas de entropía. El sistema integra la Programación Funcional (tres pilares: pureza, inmutabilidad y composición) junto con POO en un diseño de doble paradigma. Cuenta con 68 pruebas unitarias, de integración HTTP y funcionales, todas ejecutadas exitosamente, y está contenedorizado con Docker para garantizar portabilidad.
+El presente proyecto consiste en el desarrollo de un analizador léxico y sintáctico multilenguaje con validación semántica y cálculo de entropía de Shannon. La herramienta soporta cinco lenguajes de programación (C, C++, Java, JavaScript y Python) cada uno con su propio lexer, parser, validador semántico y AST diferenciado. La arquitectura del sistema se basa en los cuatro pilares de la Programación Orientada a Objetos (abstracción, herencia, polimorfismo y encapsulamiento) implementados mediante un patrón Factory que selecciona dinámicamente el analizador adecuado según el lenguaje. El backend está construido con Flask (Python) organizado en tres capas (routes → services → core), mientras que el frontend ofrece un editor inteligente con resaltado sintáctico, autocompletado y visualización interactiva de tokens, AST, validación semántica y estadísticas de entropía. Cuenta con 50 pruebas unitarias y de integración HTTP, todas ejecutadas exitosamente, y está contenedorizado con Docker para garantizar portabilidad.
 
 \textbf{Palabras clave:} análisis léxico, análisis sintáctico, AST, multilenguaje, POO, entropía de Shannon, compiladores, ingeniería de software.
-
-\newpage
 
 % ============================================================
 % ABSTRACT
@@ -128,8 +122,6 @@ El presente proyecto consiste en el desarrollo de un analizador léxico y sintá
 This project consists of the development of a multi-language lexical and syntactic analyzer with semantic validation and Shannon entropy calculation. The tool supports five programming languages (C, C++, Java, JavaScript and Python) each with its own lexer, parser, semantic validator and differentiated AST. The system architecture is based on the four pillars of Object-Oriented Programming (abstraction, inheritance, polymorphism and encapsulation) implemented through a Factory Pattern that dynamically selects the appropriate analyzer based on the language. The backend is built with Flask (Python) organized in three layers (routes → services → core), while the frontend offers an intelligent editor with syntax highlighting, autocompletion and interactive visualization of tokens, AST, semantic validation and entropy statistics. The system includes 50 unit and HTTP integration tests, all successfully executed, and is containerized with Docker to ensure portability.
 
 \textbf{Keywords:} lexical analysis, syntactic analysis, AST, multi-language, OOP, Shannon entropy, compilers, software engineering.
-
-\newpage
 
 % ============================================================
 % 1. INTRODUCCIÓN
@@ -145,8 +137,6 @@ El presente proyecto aborda esta problemática mediante el desarrollo de una her
 El sistema se complementa con el cálculo de la entropía de Shannon aplicada a la distribución de tokens, lo que añade una dimensión cuantitativa al análisis: permite medir la complejidad informativa del código fuente y comparar cómo una misma operación (por ejemplo, una función) presenta distinta diversidad léxica según el lenguaje en que se escribe \cite{shannon1948}.
 
 La arquitectura del software se diseñó siguiendo principios de ingeniería de software: separación en capas, uso de patrones de diseño (Factory Pattern) y aplicación estricta de los cuatro pilares de la Programación Orientada a Objetos. Esto garantiza que el sistema no solo sea funcional, sino también mantenible, extensible y didáctico en su estructura interna.
-
-\newpage
 
 % ============================================================
 % 2. PLANTEAMIENTO DEL PROBLEMA
@@ -197,8 +187,6 @@ Desarrollar un analizador léxico y sintáctico multilenguaje con validación se
     \item Calcular la entropía de Shannon sobre la distribución de tokens para medir la complejidad informativa del código fuente y comparar entre lenguajes.
     \item Diseñar una interfaz web con editor inteligente (CodeMirror) que ofrezca resaltado sintáctico, autocompletado, visualización de AST y estadísticas de entropía.
 \end{enumerate}
-
-\newpage
 
 % ============================================================
 % 5. METODOLOGÍA
@@ -300,7 +288,7 @@ El polimorfismo se manifiesta en múltiples niveles:
 
 \subsection{Fase 4: Modelado UML}
 
-Como parte del diseño arquitectónico previo a la implementación, se elaboraron seis diagramas UML que modelan distintos aspectos del sistema.
+Como parte del diseño arquitectónico previo a la implementación, se elaboraron seis diagramas UML que modelan distintos aspectos del sistema. Cuatro fueron elaborados en SmartDraw (casos de uso, actividades, secuencia y estados) y dos en PlantUML (clases y componentes).
 
 \subsubsection{Diagrama de Casos de Uso}
 
@@ -370,7 +358,7 @@ El diagrama de estados (Figura \ref{fig:estados}) modela el ciclo de vida del pr
 
 \begin{figure}[H]
     \centering
-    \imgwide{diagrama_estados.png}
+    \imgwide{diagrama_estado.png}
     \caption{Diagrama de Estados: ciclo de vida del análisis}
     \label{fig:estados}
 \end{figure}
@@ -401,212 +389,54 @@ El flujo completo de análisis de un fragmento de código sigue la siguiente sec
     \item El resultado se empaqueta en JSON y se retorna al frontend para su visualización.
 \end{enumerate}
 
-\newpage
-
 % ============================================================
-% 5.7 FASE 7: PROGRAMACIÓN FUNCIONAL
+% 5.7 PARADIGMAS DE PROGRAMACIÓN IDENTIFICADOS
 % ============================================================
-\subsection{Fase 7: Programación Funcional -- Los 3 Pilares}
+\subsection{Paradigmas de programación identificados en el sistema}
 
-Además del paradigma orientado a objetos, el proyecto incorpora los tres pilares fundamentales de la Programación Funcional (FP): \textbf{pureza}, \textbf{inmutabilidad} y \textbf{composición}. Estos pilares no compiten con POO, sino que la complementan en componentes específicos donde la predictibilidad matemática y la ausencia de efectos secundarios ofrecen ventajas de robustez.
+El proyecto no parte de la premisa de ``implementar el paradigma X'', sino que los paradigmas emergen naturalmente del diseño del software. A continuación se identifican los conceptos de Programación Orientada a Objetos y Programación Funcional que ya existen en el código sin haber sido forzados.
 
-\subsubsection{Pilar 1: Funciones Puras}
+\subsubsection{Programación Orientada a Objetos (POO)}
 
-Una función pura es aquella que cumple dos propiedades estrictas:
-
-\begin{enumerate}
-    \item \textbf{Determinismo}: Para los mismos argumentos de entrada, siempre retorna el mismo resultado.
-    \item \textbf{Aislamiento}: No produce efectos secundarios (no modifica variables externas, no escribe archivos, no imprime en consola, no lanza excepciones).
-\end{enumerate}
-
-En el proyecto, las funciones puras se concentran en el módulo \texttt{core/funcional.py} y se aplican en los siguientes componentes:
-
-\begin{itemize}
-    \item \texttt{calcular\_entropia\_pura(tipos\_tokens)}: Recibe una tupla de tipos de token y retorna un diccionario con entropía, entropía máxima, normalización, total, tipos únicos, densidad y distribución. No depende de ningún estado externo; dado el mismo input, produce el mismo output siempre (Figura \ref{fig:fp_pureza}).
-    
-    \item \texttt{map\_puro(fn, iterable)}: Aplica una función a cada elemento de una secuencia y retorna una tupla inmutable. Equivalente funcional de \texttt{map()}.
-    
-    \item \texttt{filter\_puro(fn, iterable)}: Filtra elementos según un predicado y retorna una tupla inmutable.
-    
-    \item \texttt{reduce\_puro(fn, iterable, inicial)}: Acumula valores aplicando una función binaria, sin mutar estado externo.
-    
-    \item \texttt{composicion(*funcs)}: Compone múltiples funciones en una tubería (\textit{pipeline}) donde la salida de una es la entrada de la siguiente: \texttt{composicion(f, g, h)(x) = h(g(f(x)))}.
-\end{itemize}
-
-La Tabla \ref{tab:fp_vs_oop} contrasta el enfoque OOP (estado mutable encapsulado) con el enfoque FP (funciones puras sin estado) para el mismo cálculo de entropía.
+Python es un lenguaje orientado a objetos por diseño. Las clases, la herencia, el polimorfismo y el encapsulamiento son parte natural de la arquitectura del sistema, no un añadido artificial. La Tabla \ref{tab:poo_natural} resume dónde se manifiesta cada pilar.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Doble paradigma: OOP vs Funcional para el cálculo de entropía}
-\label{tab:fp_vs_oop}
-\begin{tabular}{@{}p{5.2cm}p{5.2cm}@{}}
+\caption{POO identificada naturalmente en el sistema}
+\label{tab:poo_natural}
+\begin{tabular}{@{}p{2.5cm}p{3.5cm}p{4cm}@{}}
 \toprule
-\textbf{Enfoque OOP (CalculadorEntropia)} & \textbf{Enfoque FP (calcular\_entropia\_pura)} \\
+\textbf{Pilar} & \textbf{Dónde se encuentra} & \textbf{Archivo} \\
 \midrule
-Instancia con estado interno mutable (self.tokens, self.frecuencias). & Función sin estado: recibe datos, retorna resultados. \\
-\addlinespace
-Métodos consultan el estado acumulado (self.total, self.calcular()). & Cada llamada es independiente; no comparte ni modifica estado. \\
-\addlinespace
-Útil cuando se necesitan múltiples consultas sobre el mismo conjunto de tokens. & Útil para cálculos aislados, comparaciones entre lenguajes y testing. \\
+Abstracción & Clases ABC con @abstractmethod & \texttt{core/analizadores/base.py} \\
+Herencia & LexerBase → CLikeBase → CLexer (2 niveles) & \texttt{base.py} → \texttt{base\_clike.py} → \texttt{c\_analyzer.py} \\
+Polimorfismo & sentencia() implementado distinto en 5 parsers & Cada \texttt{*\_analyzer.py} \\
+Encapsulamiento & Métodos \_privados, ServicioAnalisis, Factory & \texttt{services/}, \texttt{core/analizador\_factory.py} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Ambos enfoques producen resultados idénticos, lo cual fue verificado mediante la prueba \texttt{test\_fp\_equivalencia\_oop\_vs\_funcional} (68 pruebas, 0 fallos).
+\subsubsection{Programación Funcional (FP)}
 
-\subsubsection{Pilar 2: Inmutabilidad}
-
-La inmutabilidad establece que una vez que un dato es creado, no puede ser modificado. Cualquier ``cambio'' implica crear una nueva copia con la modificación deseada, dejando el original intacto. Esto elimina condiciones de carrera y hace el código \textit{thread-safe} por naturaleza.
-
-En Python, la inmutabilidad se implementa mediante:
-
-\begin{itemize}
-    \item \textbf{Tuplas} en lugar de listas para colecciones que no deben cambiar.
-    \item \textbf{@dataclass(frozen=True)} para objetos cuyos atributos son fijos tras la construcción.
-    \item \textbf{MappingProxyType} para diccionarios de solo lectura.
-    \item \textbf{replace()} de \texttt{dataclasses} para crear copias con campos modificados sin mutar el original.
-\end{itemize}
-
-En el proyecto, las siguientes estructuras aplican inmutabilidad (Tabla \ref{tab:inmutabilidad}):
-
-\begin{table}[H]
-\centering
-\footnotesize
-\caption{Estructuras inmutables en el proyecto}
-\label{tab:inmutabilidad}
-\begin{tabular}{@{}p{3.2cm}p{3.8cm}p{4.8cm}p{3.2cm}@{}}
-\toprule
-\textbf{Estructura} & \textbf{Tipo Python} & \textbf{Propósito} & \textbf{Módulo} \\
-\midrule
-EstadisticasInmutables & @dataclass(frozen=True) & Resultados de entropía & core/funcional.py \\
-\addlinespace
-TokenInmutable & @dataclass(frozen=True) & Representación de token & core/funcional.py \\
-\addlinespace
-ResultadoValidacion & @dataclass(frozen=True) & Errores y advertencias & core/funcional.py \\
-\addlinespace
-Retorno de map\_puro & tuple & Secuencia transformada & core/funcional.py \\
-\addlinespace
-Retorno de filter\_puro & tuple & Secuencia filtrada & core/funcional.py \\
-\addlinespace
-Distribución en entropía & MappingProxyType & Diccionario solo lectura & core/funcional.py \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\begin{figure}[H]
-    \centering
-    \begin{verbatim}
-    # PILAR 2: Inmutabilidad en acción
-    e1 = EstadisticasInmutables(entropia=2.5, total_tokens=10)
-    e2 = e1.con_entropia(3.0)   # Crea COPIA, no muta e1
-    
-    # e1.entropia sigue siendo 2.5 (INMUTABLE)
-    # e2.entropia es 3.0 (NUEVA copia)
-    \end{verbatim}
-    \caption{Ejemplo de inmutabilidad: \texttt{con\_entropia()} crea una copia}
-    \label{fig:fp_inmutabilidad}
-\end{figure}
-
-\subsubsection{Pilar 3: Composición Funcional}
-
-La composición funcional consiste en unir funciones como piezas de LEGO, donde la salida de una función se convierte en la entrada de la siguiente. El software se transforma en una serie de tuberías (\textit{pipelines}) conectadas por donde fluyen los datos sin ser destruidos.
-
-En el proyecto, la función \texttt{composicion(*funcs)} implementa este principio:
-
-\begin{verbatim}
-composicion(f, g, h)(x) = h(g(f(x)))
-\end{verbatim}
-
-Esto permite construir cadenas de procesamiento declarativas, donde cada paso es una función pura que transforma los datos sin efectos secundarios:
-
-\begin{verbatim}
-pipeline = composicion(
-    transformar_tokens_a_tipos,   # Paso 1: extraer tipos
-    calcular_entropia_pura,       # Paso 2: calcular entropía
-)
-resultado = pipeline(tokens)     # Flujo declarativo
-\end{verbatim}
-
-\subsubsection{Conceptos avanzados: Closures}
-
-Un \textbf{closure} es una función interna que ``recuerda'' el valor de una variable externa, incluso después de que la función padre haya terminado su ejecución. Es la forma funcional de tener estado sin usar clases ni variables mutables. En palabras del paradigma: ``Un closure es la forma funcional de un objeto''.
-
-En el proyecto se implementan tres closures:
-
-\begin{itemize}
-    \item \texttt{crear\_multiplicador\_token(factor)}: Retorna una función que multiplica frecuencias de tokens por un peso específico. El \texttt{factor} queda ``capturado'' en el scope del closure.
-    \item \texttt{crear\_filtro\_por\_tipo(tipo\_objetivo)}: Retorna una función que filtra tokens de un tipo específico. Permite crear filtros especializados sin subclases.
-    \item \texttt{crear\_contador\_token()}: Mantiene un estado interno encapsulado (diccionario de conteos) sin usar \texttt{self} ni atributos de clase.
-\end{itemize}
-
-\subsubsection{Conceptos avanzados: Decoradores}
-
-Un \textbf{decorador} es una función de orden superior que envuelve a otra para añadirle funcionalidad sin modificar su código fuente. Es ideal para: logs, validaciones, caché y seguridad.
-
-En el proyecto se implementan tres decoradores:
-
-\begin{itemize}
-    \item \texttt{@decorador\_pureza}: Valida que la función decorada mantenga su nombre y comportamiento original usando \texttt{@wraps}.
-    \item \texttt{@decorador\_validar\_no\_vacio}: Aplica el principio FAIL FAST funcional: si la entrada está vacía, retorna un resultado por defecto sin ejecutar la lógica principal.
-    \item \texttt{@decorador\_log}: Registra cada invocación a la función decorada, demostrando el principio de añadir comportamiento sin tocar la lógica interna.
-\end{itemize}
-
-\subsubsection{Conceptos avanzados: Partial Application}
-
-La \textbf{aplicación parcial} (\texttt{functools.partial}) permite pre-llenar algunos argumentos de una función, creando un ``atajo'' especializado. Es el equivalente funcional de crear una subclase con valores por defecto, pero sin herencia ni clases:
-
-\begin{verbatim}
-duplicar = aplicar_parcial(multiplicar, 2)
-duplicar(10)  # 20
-\end{verbatim}
-
-\subsubsection{Conceptos avanzados: List Comprehensions}
-
-Las \textbf{list comprehensions} son la forma preferida de Python para combinar map y filter en una sintaxis declarativa y legible:
-
-\begin{verbatim}
-[transformacion(x) for x in secuencia if filtro(x)]
-\end{verbatim}
-
-En el proyecto, \texttt{filtrar\_y\_transformar\_inmutable()} aplica este patrón retornando tuplas inmutables, combinando la legibilidad de la sintaxis Python con la seguridad de la inmutabilidad funcional.
-
-\subsubsection{Imperativo vs Funcional: El Gran Cambio de Pensamiento}
-
-La Tabla \ref{tab:imperativo_vs_funcional} sintetiza la diferencia fundamental entre ambos paradigmas, demostrada en el proyecto mediante la función \texttt{ejemplo\_imperativo\_vs\_funcional()}.
+Aunque el paradigma principal es POO, ciertos componentes del sistema exhiben características de programación funcional de forma natural, sin haberse creado módulos específicos para ello. La Tabla \ref{tab:fp_natural} identifica estos puntos.
 
 \begin{table}[H]
 \centering
 \small
-\caption{Imperativo vs Funcional: mismo resultado, distinto enfoque}
-\label{tab:imperativo_vs_funcional}
-\begin{tabular}{@{}p{5cm}p{5cm}@{}}
+\caption{FP identificada naturalmente en el sistema}
+\label{tab:fp_natural}
+\begin{tabular}{@{}p{2.5cm}p{3.5cm}p{4cm}@{}}
 \toprule
-\textbf{Enfoque Imperativo (EVITAR)} & \textbf{Enfoque Funcional (USAR)} \\
+\textbf{Concepto FP} & \textbf{Dónde se encuentra} & \textbf{Archivo} \\
 \midrule
-Secuencia de pasos ordenados. & Evaluación de expresiones anidadas. \\
-\addlinespace
-Variables que cambian de valor. & Constantes que representan valores. \\
-\addlinespace
-Bucles for y while. & Recursión y transformaciones masivas (map/filter/reduce). \\
-\addlinespace
-Basado en efectos secundarios. & Basado en pureza matemática. \\
+Función pura & calcular(): mismos tokens → misma entropía, sin efectos & \texttt{core/entropia.py} \\
+Inmutabilidad & TokenBase: atributos fijos tras construcción, no se modifican & \texttt{core/token.py} \\
+Composición & Pipeline: lexer → parser → semántica → entropía & \texttt{services/analisis\_service.py} \\
+Higher-order & editor.on("keyup", fn) — función pasada como argumento & \texttt{frontend/js/editor.js} \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\subsubsection{Integración de paradigmas: POO + FP}
-
-El proyecto no elige entre POO y FP, sino que los integra donde cada uno aporta mayor valor:
-
-\begin{itemize}
-    \item \textbf{POO} gobierna la arquitectura general: clases abstractas, herencia para reutilización, polimorfismo para comportamientos específicos por lenguaje, encapsulamiento para ocultar complejidad.
-    \item \textbf{FP} gobierna los cálculos matemáticos y las transformaciones de datos: entropía con funciones puras, map/filter/reduce sobre colecciones, estructuras inmutables para resultados, composición de funciones para pipelines de procesamiento.
-\end{itemize}
-
-Esta integración demuestra que los paradigmas no son excluyentes sino complementarios, y que un ingeniero de software debe saber seleccionar la herramienta adecuada para cada componente del sistema.
-
-\newpage
 
 % ============================================================
 % 6. IMPLEMENTACIÓN
@@ -615,7 +445,7 @@ Esta integración demuestra que los paradigmas no son excluyentes sino complemen
 
 \subsection{Estructura del proyecto}
 
-El proyecto se organiza en 38 archivos distribuidos en una estructura modular:
+El proyecto se organiza en 37 archivos distribuidos en una estructura modular:
 
 \begin{verbatim}
 analizador-proyecto/
@@ -633,8 +463,7 @@ analizador-proyecto/
 │   ├── core/
 │   │   ├── token.py             ← TokenBase, Token (POO)
 │   │   ├── analizador_factory.py ← Factory Pattern
-│   │   ├── entropia.py          ← Shannon + FP (doble paradigma)
-│   │   ├── funcional.py         ← Funciones puras + Inmutabilidad
+│   │   ├── entropia.py          ← Shannon + estadísticas
 │   │   ├── semantica/           ← Validadores por lenguaje
 │   │   │   ├── base.py          ← ValidadorSemanticoBase
 │   │   │   ├── semantica_c.py
@@ -702,8 +531,6 @@ La interfaz (Figura \ref{fig:interfaz}) se compone de tres zonas principales:
     \caption{Interfaz principal del analizador multilenguaje}
     \label{fig:interfaz}
 \end{figure}
-
-\newpage
 
 % ============================================================
 % 7. RESULTADOS
@@ -842,7 +669,7 @@ La interfaz incluye una tabla comparativa (Figura \ref{fig:comparador}) que mues
 
 \subsection{Cobertura de pruebas}
 
-El sistema cuenta con 68 pruebas automatizadas distribuidas de la siguiente manera:
+El sistema cuenta con 50 pruebas automatizadas distribuidas de la siguiente manera:
 
 \begin{table}[H]
 \centering
@@ -861,14 +688,11 @@ Entropía de Shannon & 3 & 3 OK \\
 Manejo de errores & 3 & 3 OK \\
 Factory / POO & 3 & 3 OK \\
 Integración HTTP & 3 & 3 OK \\
-Programación Funcional & 18 & 18 OK \\
 \midrule
-\textbf{TOTAL} & \textbf{68} & \textbf{68 OK, 0 fallos} \\
+\textbf{TOTAL} & \textbf{50} & \textbf{50 OK, 0 fallos} \\
 \bottomrule
 \end{tabular}
 \end{table}
-
-\newpage
 
 % ============================================================
 % 8. DISCUSIÓN
@@ -880,8 +704,6 @@ Los resultados obtenidos confirman que es posible construir un analizador multil
 La incorporación de la entropía de Shannon como métrica complementaria demostró ser útil para cuantificar diferencias que el análisis cualitativo solo puede describir. Por ejemplo, la misma función de suma produce una entropía normalizada de 0.95 en Python pero 0.87 en Java, lo que refleja matemáticamente la verbosidad sintáctica de Java frente a la concisión de Python. El enfoque de doble paradigma (POO + FP) permitió que este cálculo fuera implementado tanto como método de una clase (OOP) como función pura sin estado (FP), verificándose que ambos producen resultados idénticos.
 
 Entre las limitaciones identificadas se encuentran: (1) el type checking es básico y no cubre expresiones compuestas ni tipos definidos por el usuario; (2) los parsers no soportan constructos avanzados como \texttt{switch/case}, \texttt{do-while} o \texttt{try/except}; (3) la detección de lenguaje automática es probabilística y puede fallar con código ambiguo; (4) el frontend depende de CDN para Bootstrap y CodeMirror, lo que requiere conexión a Internet.
-
-\newpage
 
 % ============================================================
 % 9. CONCLUSIONES
@@ -897,13 +719,11 @@ Entre las limitaciones identificadas se encuentran: (1) el type checking es bás
 
     \item El cálculo de entropía de Shannon sobre tokens demostró ser una métrica efectiva para cuantificar la complejidad léxica del código, permitiendo comparaciones objetivas entre lenguajes. La misma operación produce distinta entropía según la verbosidad sintáctica del lenguaje.
 
-    \item Las 68 pruebas automatizadas (unitarias + integración HTTP + funcionales) garantizan la confiabilidad del sistema y sirven como documentación ejecutable de cada funcionalidad implementada.
+    \item Las 50 pruebas automatizadas (unitarias + integración HTTP) garantizan la confiabilidad del sistema y sirven como documentación ejecutable de cada funcionalidad implementada.
 
     \item La interfaz web con editor CodeMirror, panel de entropía y tabla comparativa proporciona una experiencia de aprendizaje interactiva que transforma conceptos abstractos de compiladores en visualizaciones concretas y comparables.
 \end{enumerate}
-
 \newpage
-
 % ============================================================
 % REFERENCIAS
 % ============================================================
@@ -947,92 +767,20 @@ Python Software Foundation. (2024). Python Language Reference. \url{https://docs
 
 \end{thebibliography}
 
-\newpage
-
 % ============================================================
 % ANEXOS
 % ============================================================
 \section{ANEXOS}
 
-\subsection{Anexo A: Diagrama de Casos de Uso}
+\subsection{Anexo A: Ejecución del proyecto}
 
-El diagrama de casos de uso (Figura \ref{fig:casos_uso_anexo}) se elaboró en PlantUML y representa las interacciones entre el usuario y las diez funcionalidades principales del sistema.
+\textbf{Repositorio GitHub:} \url{https://github.com/liamcruzticona/LP}
 
-\begin{figure}[H]
-    \centering
-    \imgwide{diagrama_casos_uso.png}
-    \caption{Diagrama de Casos de Uso -- Analizador Multilenguaje}
-    \label{fig:casos_uso_anexo}
-\end{figure}
+El repositorio incluye: código fuente del backend (Python/Flask) con arquitectura en tres capas, frontend modularizado (HTML/CSS/JS), configuración Docker, suite de 50 pruebas y diagramas UML.
 
-\subsection{Anexo B: Diagrama de Clases}
+\vspace{0.5cm}
 
-El diagrama de clases (Figura \ref{fig:clases_anexo}) muestra la arquitectura POO completa, incluyendo clases abstractas, jerarquías de herencia, composición, y el Factory Pattern. Los cuatro pilares de POO están anotados en el diagrama.
-
-\begin{figure}[H]
-    \centering
-    \imgwide{diagrama_clases.png}
-    \caption{Diagrama de Clases -- Arquitectura POO del sistema}
-    \label{fig:clases_anexo}
-\end{figure}
-
-\subsection{Anexo C: Diagrama de Actividades}
-
-\begin{figure}[H]
-    \centering
-    \imgwide{diagrama_actividades.png}
-    \caption{Diagrama de Actividades -- Flujo del proceso de análisis}
-    \label{fig:actividades_anexo}
-\end{figure}
-
-\subsection{Anexo D: Diagrama de Secuencia}
-
-\begin{figure}[H]
-    \centering
-    \imgwide{diagrama_secuencia.png}
-    \caption{Diagrama de Secuencia -- Interacción temporal entre componentes}
-    \label{fig:secuencia_anexo}
-\end{figure}
-
-\subsection{Anexo E: Diagrama de Componentes}
-
-\begin{figure}[H]
-    \centering
-    \imgwide{diagrama_componentes.png}
-    \caption{Diagrama de Componentes -- Arquitectura física del sistema}
-    \label{fig:componentes_anexo}
-\end{figure}
-
-\subsection{Anexo F: Diagrama de Estados}
-
-\begin{figure}[H]
-    \centering
-    \imgwide{diagrama_estados.png}
-    \caption{Diagrama de Estados -- Ciclo de vida del análisis}
-    \label{fig:estados_anexo}
-\end{figure}
-
-\subsection{Anexo G: Código fuente del proyecto}
-
-El código fuente completo está disponible en el repositorio GitHub:
-
-\begin{center}
-\url{https://github.com/liamcruzticona/LP}
-\end{center}
-
-El repositorio incluye:
-\begin{itemize}
-    \item Código fuente del backend (Python/Flask) con arquitectura en tres capas.
-    \item Código fuente del frontend (HTML/CSS/JS) modularizado en 7 archivos.
-    \item Archivos de configuración Docker (Dockerfile, docker-compose.yml, nginx.conf).
-    \item Suite de 68 pruebas unitarias, de integración y funcionales.
-    \item Diagramas UML en formato PlantUML (.puml) e imágenes renderizadas (SVG, PNG).
-\end{itemize}
-
-\subsection{Anexo H: Ejecución del proyecto}
-
-Para ejecutar el proyecto en un entorno local:
-
+\textbf{Ejecución en entorno local:}
 \begin{enumerate}
     \item Instalar dependencias: \texttt{pip install -r requirements.txt}
     \item Iniciar backend: \texttt{python backend/app.py}
@@ -1040,8 +788,7 @@ Para ejecutar el proyecto en un entorno local:
     \item Abrir navegador en: \texttt{http://127.0.0.1:8080}
 \end{enumerate}
 
-Alternativamente, usando Docker:
-
+\textbf{Alternativa con Docker:}
 \begin{enumerate}
     \item \texttt{docker-compose up --build}
     \item Backend en: \texttt{http://localhost:5000}

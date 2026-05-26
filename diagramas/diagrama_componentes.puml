@@ -19,9 +19,8 @@ package "Backend Container\n(Python 3.10 :5000)" as BE {
     package "Core" {
         [token.py] as TK
         [analizador_factory.py] as FY
-        [entropia.py] as EN
-        [funcional.py] as FP
-        package "analizadores" {
+    [entropia.py] as EN
+    package "analizadores" {
             [c_analyzer.py] as LXC
             [cpp_analyzer.py] as LXPP
             [java_analyzer.py] as LXJ
@@ -53,7 +52,6 @@ HTML --> CDN : CSS/JS externos
 RT --> SV : delega
 SV --> FY : selecciona
 SV --> EN : calcula
-SV --> FP : funciones puras
 FY --> LXC
 FY --> LXPP
 FY --> LXJ
