@@ -77,7 +77,6 @@ Ing. Jose Luis Juarez Ruelas\\[0.8cm]
 % LINKS DEL PROYECTO
 % ============================================================
 \section*{LINKS DEL PROYECTO}
-\addcontentsline{toc}{section}{LINKS DEL PROYECTO}
 
 \begin{center}
 \textbf{Repositorio GitHub}\\[0.3cm]
@@ -96,20 +95,11 @@ Ing. Jose Luis Juarez Ruelas\\[0.8cm]
 \end{center}
 
 % ============================================================
-% ÍNDICE
-% ============================================================
-\newpage
-\tableofcontents
-\newpage
-\listoffigures
-\newpage
-% ============================================================
 % RESUMEN
 % ============================================================
 \section*{RESUMEN}
-\addcontentsline{toc}{section}{RESUMEN}
 
-El presente proyecto consiste en el desarrollo de un analizador léxico y sintáctico multilenguaje con validación semántica y cálculo de entropía de Shannon. La herramienta soporta cinco lenguajes de programación (C, C++, Java, JavaScript y Python) cada uno con su propio lexer, parser, validador semántico y AST diferenciado. La arquitectura del sistema se basa en los cuatro pilares de la Programación Orientada a Objetos (abstracción, herencia, polimorfismo y encapsulamiento) implementados mediante un patrón Factory que selecciona dinámicamente el analizador adecuado según el lenguaje. El backend está construido con Flask (Python) organizado en tres capas (routes → services → core), mientras que el frontend ofrece un editor inteligente con resaltado sintáctico, autocompletado y visualización interactiva de tokens, AST, validación semántica y estadísticas de entropía. Cuenta con 50 pruebas unitarias y de integración HTTP, todas ejecutadas exitosamente, y está contenedorizado con Docker para garantizar portabilidad.
+Los estudiantes de Ingeniería de Sistemas enfrentan dificultades para comprender el análisis léxico y sintáctico de compiladores, ya que estos conceptos suelen enseñarse sin herramientas visuales que permitan observar la tokenización y construcción de árboles sintácticos en tiempo real. El presente proyecto aborda esta problemática mediante el desarrollo de un analizador léxico y sintáctico multilenguaje con validación semántica y cálculo de entropía de Shannon. La herramienta soporta cinco lenguajes de programación (C, C++, Java, JavaScript y Python) cada uno con su propio lexer, parser, validador semántico y AST diferenciado. La arquitectura del sistema se basa en los cuatro pilares de la Programación Orientada a Objetos (abstracción, herencia, polimorfismo y encapsulamiento) implementados mediante un patrón Factory que selecciona dinámicamente el analizador adecuado según el lenguaje. El backend está construido con Flask (Python) organizado en tres capas (routes → services → core), mientras que el frontend ofrece un editor inteligente con resaltado sintáctico, autocompletado y visualización interactiva de tokens, AST, validación semántica y estadísticas de entropía. Cuenta con 50 pruebas unitarias y de integración HTTP, todas ejecutadas exitosamente, y está contenedorizado con Docker para garantizar portabilidad.
 
 \textbf{Palabras clave:} análisis léxico, análisis sintáctico, AST, multilenguaje, POO, entropía de Shannon, compiladores, ingeniería de software.
 
@@ -117,9 +107,8 @@ El presente proyecto consiste en el desarrollo de un analizador léxico y sintá
 % ABSTRACT
 % ============================================================
 \section*{ABSTRACT}
-\addcontentsline{toc}{section}{ABSTRACT}
 
-This project consists of the development of a multi-language lexical and syntactic analyzer with semantic validation and Shannon entropy calculation. The tool supports five programming languages (C, C++, Java, JavaScript and Python) each with its own lexer, parser, semantic validator and differentiated AST. The system architecture is based on the four pillars of Object-Oriented Programming (abstraction, inheritance, polymorphism and encapsulation) implemented through a Factory Pattern that dynamically selects the appropriate analyzer based on the language. The backend is built with Flask (Python) organized in three layers (routes → services → core), while the frontend offers an intelligent editor with syntax highlighting, autocompletion and interactive visualization of tokens, AST, semantic validation and entropy statistics. The system includes 50 unit and HTTP integration tests, all successfully executed, and is containerized with Docker to ensure portability.
+Systems Engineering students face difficulties in understanding the lexical and syntactic analysis of compilers, as these concepts are usually taught without visual tools that allow observing tokenization and syntax tree construction in real time. This project addresses this problem through the development of a multi-language lexical and syntactic analyzer with semantic validation and Shannon entropy calculation. The tool supports five programming languages (C, C++, Java, JavaScript and Python) each with its own lexer, parser, semantic validator and differentiated AST. The system architecture is based on the four pillars of Object-Oriented Programming implemented through a Factory Pattern that dynamically selects the appropriate analyzer based on the language. The backend is built with Flask (Python) organized in three layers (routes, services, core), while the frontend offers an intelligent editor with syntax highlighting and interactive visualization of tokens, AST, semantic validation and entropy statistics. The system includes 50 unit and HTTP integration tests, all successfully executed, and is containerized with Docker to ensure portability.
 
 \textbf{Keywords:} lexical analysis, syntactic analysis, AST, multi-language, OOP, Shannon entropy, compilers, software engineering.
 
@@ -176,16 +165,14 @@ El proyecto se justifica desde tres dimensiones:
 
 \subsection{Objetivo general}
 
-Desarrollar un analizador léxico y sintáctico multilenguaje con validación semántica, aplicando arquitectura en capas, los cuatro pilares de la Programación Orientada a Objetos y la teoría de la información de Shannon.
+Construir y validar un sistema de análisis léxico y sintáctico multilenguaje con validación semántica y teoría de la información, aplicando arquitectura en capas, los cuatro pilares de la Programación Orientada a Objetos y el cálculo de entropía de Shannon.
 
 \subsection{Objetivos específicos}
 
 \begin{enumerate}[label=\textbf{O\arabic*:}]
-    \item Identificar tokens con reglas léxicas diferenciadas para C, C++, Java, JavaScript y Python, incluyendo palabras reservadas, operadores compuestos y símbolos propios de cada lenguaje.
-    \item Construir parsers independientes por lenguaje que generen árboles sintácticos (AST) con estructuras específicas: clases en Java/C++, funciones flecha en JavaScript, indentación en Python.
-    \item Implementar validadores semánticos con reglas propias por lenguaje: scope de variables, type checking básico y detección de asignaciones incompatibles.
-    \item Calcular la entropía de Shannon sobre la distribución de tokens para medir la complejidad informativa del código fuente y comparar entre lenguajes.
-    \item Diseñar una interfaz web con editor inteligente (CodeMirror) que ofrezca resaltado sintáctico, autocompletado, visualización de AST y estadísticas de entropía.
+    \item \textbf{Diseñar} la arquitectura del sistema en tres capas con patrón Factory y modelado UML, garantizando separación de responsabilidades y escalabilidad para los cinco lenguajes.
+    \item \textbf{Validar} semánticamente el código fuente mediante reglas de scope, type checking y entropía de Shannon, aplicando validadores específicos por lenguaje.
+    \item \textbf{Implementar} una interfaz web interactiva con editor CodeMirror, visualización de tokens, AST, resultados semánticos y estadísticas de entropía en tiempo real.
 \end{enumerate}
 
 % ============================================================
@@ -288,7 +275,7 @@ El polimorfismo se manifiesta en múltiples niveles:
 
 \subsection{Fase 4: Modelado UML}
 
-Como parte del diseño arquitectónico previo a la implementación, se elaboraron seis diagramas UML que modelan distintos aspectos del sistema. Cuatro fueron elaborados en SmartDraw (casos de uso, actividades, secuencia y estados) y dos en PlantUML (clases y componentes).
+Como parte del diseño arquitectónico previo a la implementación, se elaboraron seis diagramas UML que modelan distintos aspectos del sistema. Cuatro fueron elaborados en SmartDraw (casos de uso, actividades, secuencia y estados) y dos en Microsoft Visio (clases y componentes).
 
 \subsubsection{Diagrama de Casos de Uso}
 
@@ -315,7 +302,7 @@ El diagrama de la Figura \ref{fig:clases} presenta la arquitectura completa de c
 \begin{figure}[H]
     \centering
     \imgwide{diagrama_clases.png}
-    \caption{Diagrama de Clases del sistema}
+    \caption{Diagrama de Clases: arquitectura POO del sistema (Microsoft Visio)}
     \label{fig:clases}
 \end{figure}
 
@@ -348,7 +335,7 @@ El diagrama de componentes (Figura \ref{fig:componentes}) presenta la arquitectu
 \begin{figure}[H]
     \centering
     \imgwide{diagrama_componentes.png}
-    \caption{Diagrama de Componentes: arquitectura del sistema}
+    \caption{Diagrama de Componentes: arquitectura física del sistema (Microsoft Visio)}
     \label{fig:componentes}
 \end{figure}
 
@@ -402,17 +389,17 @@ Python es un lenguaje orientado a objetos por diseño. Las clases, la herencia, 
 
 \begin{table}[H]
 \centering
-\small
+\footnotesize
 \caption{POO identificada naturalmente en el sistema}
 \label{tab:poo_natural}
-\begin{tabular}{@{}p{2.5cm}p{3.5cm}p{4cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{4.2cm}>{\raggedright\arraybackslash}p{5.6cm}@{}}
 \toprule
 \textbf{Pilar} & \textbf{Dónde se encuentra} & \textbf{Archivo} \\
 \midrule
-Abstracción & Clases ABC con @abstractmethod & \texttt{core/analizadores/base.py} \\
-Herencia & LexerBase → CLikeBase → CLexer (2 niveles) & \texttt{base.py} → \texttt{base\_clike.py} → \texttt{c\_analyzer.py} \\
+Abstracción & Clases ABC con @abstractmethod & \texttt{core/analizadores/}\linebreak\texttt{base.py} \\
+Herencia & LexerBase → CLikeBase → CLexer (2 niveles) & \texttt{base.py} → \texttt{base\_clike.py} →\linebreak\texttt{c\_analyzer.py} \\
 Polimorfismo & sentencia() implementado distinto en 5 parsers & Cada \texttt{*\_analyzer.py} \\
-Encapsulamiento & Métodos \_privados, ServicioAnalisis, Factory & \texttt{services/}, \texttt{core/analizador\_factory.py} \\
+Encapsulamiento & Métodos \_privados, ServicioAnalisis, Factory & \texttt{services/}, \texttt{core/}\linebreak\texttt{analizador\_factory.py} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -423,17 +410,17 @@ Aunque el paradigma principal es POO, ciertos componentes del sistema exhiben ca
 
 \begin{table}[H]
 \centering
-\small
+\footnotesize
 \caption{FP identificada naturalmente en el sistema}
 \label{tab:fp_natural}
-\begin{tabular}{@{}p{2.5cm}p{3.5cm}p{4cm}@{}}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.2cm}>{\raggedright\arraybackslash}p{4.2cm}>{\raggedright\arraybackslash}p{5.6cm}@{}}
 \toprule
 \textbf{Concepto FP} & \textbf{Dónde se encuentra} & \textbf{Archivo} \\
 \midrule
 Función pura & calcular(): mismos tokens → misma entropía, sin efectos & \texttt{core/entropia.py} \\
 Inmutabilidad & TokenBase: atributos fijos tras construcción, no se modifican & \texttt{core/token.py} \\
-Composición & Pipeline: lexer → parser → semántica → entropía & \texttt{services/analisis\_service.py} \\
-Higher-order & editor.on("keyup", fn) — función pasada como argumento & \texttt{frontend/js/editor.js} \\
+Composición & Pipeline: lexer → parser → semántica → entropía & \texttt{services/}\linebreak\texttt{analisis\_service.py} \\
+Higher-order & editor.on("keyup", fn) — función pasada como argumento & \texttt{frontend/js/}\linebreak\texttt{editor.js} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -536,6 +523,28 @@ La interfaz (Figura \ref{fig:interfaz}) se compone de tres zonas principales:
 % 7. RESULTADOS
 % ============================================================
 \section{RESULTADOS}
+
+La Tabla \ref{tab:trazabilidad} presenta la trazabilidad entre los objetivos planteados y los resultados obtenidos, evidenciando que cada objetivo fue alcanzado y verificado.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Trazabilidad Objetivos -- Resultados}
+\label{tab:trazabilidad}
+\begin{tabular}{@{}p{2.8cm}p{4.5cm}p{5cm}@{}}
+\toprule
+\textbf{Objetivo} & \textbf{Resultado obtenido} & \textbf{Evidencia} \\
+\midrule
+General: Construir y validar & Sistema funcional con 5 lenguajes, cada uno con lexer, parser, AST y semántica propios & 50 tests OK, 20 ejemplos verificados \\
+\addlinespace
+OE1: Diseñar & Arquitectura en 3 capas, Factory Pattern, 6 diagramas UML & Secciones 5.2--5.5 del informe \\
+\addlinespace
+OE2: Validar & Type checking activo en C/C++/Java, entropía de Shannon con normalización 0--1 & Secciones 7.3--7.4, Tabla \ref{tab:semaforo} \\
+\addlinespace
+OE3: Implementar & Interfaz web con editor CodeMirror, 5 temas visuales, panel de entropía, tabla comparativa & Sección 7.5, Figuras \ref{fig:interfaz} y \ref{fig:comparador} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \subsection{Análisis léxico diferenciado por lenguaje}
 
@@ -656,6 +665,8 @@ Se observa que Python tiene la menor cantidad de tokens pero la mayor entropía 
     \label{fig:entropia}
 \end{figure}
 
+La entropía de Shannon demuestra ser una métrica útil para cuantificar diferencias que el análisis cualitativo solo puede describir. La misma función de suma produce una entropía normalizada de 0.95 en Python pero 0.87 en Java, lo que refleja matemáticamente la verbosidad sintáctica de Java frente a la concisión de Python. Esta cuantificación permite comparar lenguajes de forma objetiva, midiendo la diversidad léxica relativa de cada uno.
+
 \subsection{Comparador sintáctico entre lenguajes}
 
 La interfaz incluye una tabla comparativa (Figura \ref{fig:comparador}) que muestra cómo se escribe la misma operación (variable, función, if, loop) en los cinco lenguajes. La columna del lenguaje activo se resalta con el color del tema.
@@ -694,19 +705,12 @@ Integración HTTP & 3 & 3 OK \\
 \end{tabular}
 \end{table}
 
-% ============================================================
-% 8. DISCUSIÓN
-% ============================================================
-\section{DISCUSIÓN}
-
 Los resultados obtenidos confirman que es posible construir un analizador multilenguaje con identidad propia para cada lenguaje, manteniendo una arquitectura modular y extensible. El uso de los cuatro pilares de POO no fue un requisito meramente académico, sino una necesidad arquitectónica real: sin herencia, los cuatro lenguajes C-like habrían requerido código duplicado; sin polimorfismo, el Factory no podría seleccionar dinámicamente el analizador correcto; sin abstracción, no existiría una interfaz común que permita tratar a todos los analizadores de manera uniforme; sin encapsulamiento, los detalles internos de cada lexer y parser contaminarían las capas superiores.
 
-La incorporación de la entropía de Shannon como métrica complementaria demostró ser útil para cuantificar diferencias que el análisis cualitativo solo puede describir. Por ejemplo, la misma función de suma produce una entropía normalizada de 0.95 en Python pero 0.87 en Java, lo que refleja matemáticamente la verbosidad sintáctica de Java frente a la concisión de Python. El enfoque de doble paradigma (POO + FP) permitió que este cálculo fuera implementado tanto como método de una clase (OOP) como función pura sin estado (FP), verificándose que ambos producen resultados idénticos.
-
-Entre las limitaciones identificadas se encuentran: (1) el type checking es básico y no cubre expresiones compuestas ni tipos definidos por el usuario; (2) los parsers no soportan constructos avanzados como \texttt{switch/case}, \texttt{do-while} o \texttt{try/except}; (3) la detección de lenguaje automática es probabilística y puede fallar con código ambiguo; (4) el frontend depende de CDN para Bootstrap y CodeMirror, lo que requiere conexión a Internet.
+Entre las limitaciones identificadas se encuentran: el type checking es básico y no cubre expresiones compuestas ni tipos definidos por el usuario; los parsers no soportan constructos avanzados como \texttt{switch/case}, \texttt{do-while} o \texttt{try/except}; la detección de lenguaje automática es probabilística y puede fallar con código ambiguo; y el frontend depende de CDN para Bootstrap y CodeMirror, lo que requiere conexión a Internet.
 
 % ============================================================
-% 9. CONCLUSIONES
+% 8. CONCLUSIONES
 % ============================================================
 \section{CONCLUSIONES}
 
